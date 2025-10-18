@@ -10,7 +10,7 @@ int enB = 3;
 int in1B = 5; 
 int in2B = 6; 
 
-int set_speed = 200
+int set_speed = 200;
 
 SoftwareSerial BT(10,11); //RX | TX
 
@@ -35,8 +35,8 @@ void loop() {
 
   if (BT.available()) { // Loop runs if BT connected
 
-    char command = BT.read() // Input Command using bluetooth connection
-    stop(); //Initialize with stationary car
+    char command = BT.read(); // Input Command using bluetooth connection
+    StopMotor(); //Initialize with stationary car
 
     if (command == 'F') { //Forward
         MoveForward(); //NEED TO WRITE CODE FOR FORWARD COMMAND void forward
@@ -57,10 +57,9 @@ void loop() {
     } else if (command == 'S') { //Stop Motor
       StopMotor();
       Serial.println("Motor Stopped!");
-
     }
+  delay(2000);
   }
-  delay(2000)
 }
 
 void MoveForward()
@@ -81,8 +80,7 @@ void MoveForward()
   delay(2000);
 }
 
-void MoveBackward()
-{
+void MoveBackward() {
 // turn on motor in forward direction
 //Motor 1 
   digitalWrite(in1A, LOW);
@@ -96,11 +94,10 @@ void MoveBackward()
 // set speed to 200 out of possible range 0~255
   analogWrite(enB, set_speed);
 
-delay(2000);
+  delay(2000);
 }
 
-void TurnRight()
-{
+void TurnRight() {
 // turn on motor in forward direction
 //Motor 1 
   digitalWrite(in1A, HIGH);
@@ -114,10 +111,10 @@ void TurnRight()
 // set speed to 200 out of possible range 0~255
   analogWrite(enB, set_speed);
 
-delay(2000);
+  delay(2000);
+}
 
-void TurnLeft()
-{
+void TurnLeft(){
 // turn on motor in forward direction
 //Motor 1 
   digitalWrite(in1A, LOW);
@@ -131,10 +128,9 @@ void TurnLeft()
 // set speed to 200 out of possible range 0~255
   analogWrite(enB, set_speed);
 
-delay(2000);
-
-void StopMotor()
-{
+  delay(2000);
+}
+void StopMotor() {
 // turn on motor in forward direction
 //Motor 1 
   digitalWrite(in1A, LOW);
@@ -148,7 +144,8 @@ void StopMotor()
 // set speed to 200 out of possible range 0~255
   analogWrite(enB, set_speed);
 
-delay(2000);
+  delay(2000);
+}
 
 
     
