@@ -5,8 +5,10 @@ SoftwareSerial BTSerial(9, 10); // RX | TX of Bluetooth module
 SoftwareSerial DriveSerial(11, 12); // RX | TX of Drive Arduino
 
 cmd = 0; //holds ascii from serial line
-String fwd_str = "w0:";
-String turn_str = "r0:";
+String fwd_str = "F:";
+String right_str = "R:";
+String left_str = "L:";
+String bck_str = "B:"
 
 void setup()
 {
@@ -15,7 +17,7 @@ void setup()
   Serial.println("Enter command through Bluetooth: ");
   // HC-05 default speed in AT command mode
 
-  BTSerial.begin(38400);
+  BTSerial.begin(9600);
 }
 
 
@@ -32,13 +34,13 @@ void loop()
   std::string str_cmd = std::to_string(cmd); // Converts input to string
 
   if (str_cmd.startsWith(fwd_str)) {  // If driving forward...
-    str_cmd.erase(0, 3); // Removes first 3 characters
+    str_cmd.erase(0, 2); // Removes first 3 characters
     int fwd_input = stoi(str_cmd); // Converts to integer
     // insert code to send fwd_input to Drive Arduino
   }
 
   else if (str_cmd.startsWith(turn_str)) {  // If turning...
-    str_cmd.erase(0, 3); // Removes first 3 characters
+    str_cmd.erase(0, 2); // Removes first 3 characters
     int turn_input = stoi(str_cmd); // Converts to integer
     // insert code to send turn_input to Drive Arduino!!!!!!!!!
   }
