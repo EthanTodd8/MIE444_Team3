@@ -1,9 +1,13 @@
 #include <SoftwareSerial.h> // Software Serial for functions
 
 // Connect motor controller pins to Arduino Digital Pins
-int enA = 9;
-int n1 = 8;
-int in2 = 7;
+int enA = 9; // Placeholder, we can change these to whatever we want
+int in1A = 8;
+int in2A = 7;
+
+int enB = 3;
+int in1B = 5; 
+int in2B = 6; 
 
 SoftwareSerial BT(10,11); //RX | TX
 
@@ -15,9 +19,12 @@ void setup() {
 
   //set all motor control pins to outputs
   pinMode(enA, OUTPUT);
-  pinMode(in1,OUTPUT);
-  pinMode(in2, OUTPUT);
+  pinMode(in1A,OUTPUT);
+  pinMode(in2A, OUTPUT);
 
+  pinMode(enB, OUTPUT);
+  pinMode(in1B,OUTPUT);
+  pinMode(in2B, OUTPUT);
 }
 
 void loop() {
@@ -37,15 +44,11 @@ void loop() {
       Serial.println("Moving backward!"); //NEED TO WRITE CODE FOR BACKWARDS COMMAND void backward
 
     } else if (command == 'L') { // Turn Left
-      left(); //NEED TO WRITE CODE FOR LEFT COMMAND void left
+      left();
       Serial.println("Turning left!");
 
     } else if (command == 'R') { //Turn Right
-      right(); //NEED TO WRITE CODE FOR RIGHT COMMAND void right
+      right();
       Serial.println("Turning right!");
 
     }
-
-
-  }
-}
