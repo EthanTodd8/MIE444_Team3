@@ -13,7 +13,7 @@ String turn_str = "r0:";
 #define ENCODERA_A 2  // motor A encoder
 #define ENCODERA_B 4
 
-#define ENCODERB_A 6  // motor B encoder
+#define ENCODERB_A 3  // motor B encoder
 #define ENCODERB_B 8
 
 // Variables to store the number of encoder pulses for each motor
@@ -26,19 +26,19 @@ int turn_input = 0;
 // Speed calculations. Must be within 0~255 due to PWM limits
 int fwd_speed = 200; // set fwd speed to something within possible range 0~255
 int turn_speed = 200; // set turn speed to something within possible range 0~255
-float wheel_dia = 3; // inches
+float wheel_dia = 2.559; // inches
 float wheel_dist_apart = 8; // inches
 float ecpr = 10; encoder counts per 1 full motor rotation
 
 
-// connect redboard pins to Arduino digital pins
+// connect breadboard pins to Arduino digital pins
 int enA = 9; // motor A controls
 int in1 = 8;
 int in2 = 7;
 
-int enB = 4; // motor B controls
-int in3 = 3;
-int in4 = 2;
+int enB = 5; // motor B controls
+int in3 = 13;
+int in4 = 14;
 
 
 
@@ -65,8 +65,8 @@ void setup()
   Serial.begin(9600);
   Serial.println("KIZI is alive!");
   Serial.println("Enter command through Bluetooth: ");
-  // HC-05 default speed in AT command mode
 
+  // HC-05 default speed in AT command mode
   BTSerial.begin(38400);
 }
 
