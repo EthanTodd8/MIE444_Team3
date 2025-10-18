@@ -4,8 +4,8 @@ SoftwareSerial CommsSerial(10, 11); // RX | TX of Comms Arduino
 #define ENCODERA_A 2  // motor A encoder
 #define ENCODERA_B 4
 
-#define ENCODERB_A 2  // motor B encoder
-#define ENCODERB_B 4
+#define ENCODERB_A 3  // motor B encoder
+#define ENCODERB_B 1
 
 // Variables to store the number of encoder pulses for each motor
 
@@ -18,23 +18,23 @@ int turn_duration = 0;
 // Speed calculations. Must be within 0~255 due to PWM limits
 int fwd_speed = 200; // set fwd speed to something within possible range 0~255
 int turn_speed = 200; // set turn speed to something within possible range 0~255
-float wheel_dia = 1.5; // inches
+float wheel_dia = 2.559; // inches
 
 
-// connect redboard pins to Arduino digital pins
+// connect breadboard pins to Arduino digital pins
 int enA = 9; // motor A controls
 int in1 = 8;
 int in2 = 7;
 
-int enB = 4; // motor B controls
-int in3 = 3;
-int in4 = 2;
+int enB = 12; // motor B controls
+int in3 = 5;
+int in4 = 6;
 
 
 
 void setup()
 {
-  // set all the motor control pins to outputs
+  // set all the motor control pins to outputs, encoder pins to inputs
   pinMode(enA, OUTPUT); // motor A
   pinMode(in1, OUTPUT);
   pinMode(in2, OUTPUT);
@@ -51,6 +51,7 @@ void setup()
   attachInterrupt(digitalPinToInterrupt(ENCODERA_A), EncoderEvent, CHANGE);
   attachInterrupt(digitalPinToInterrupt(ENCODERB_A), EncoderEvent, CHANGE);
 
+  // initialize serial and send status message
   Serial.begin(9600);
   Serial.println("Drive Arduino active!");
 
@@ -63,8 +64,8 @@ void setup()
 void loop()
 {
   // READ FROM COMMS ARDUINO
-  if (CommsSerial.available()) {  // if Comms Arduino sent something...
-    Serial.write(CommsSerial.read());  // write what's sent
+  if (CommsSerial.available()) {  // if data present on CommsSerial port
+    Serial.write(CommsSerial.read());  // write what's sent to hardware serial (USB port)
   }
 
 
@@ -166,3 +167,4 @@ void loop()
     CommsSerial.write(Serial.read());
   }
 }
+
