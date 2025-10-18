@@ -1,0 +1,51 @@
+#include <SoftwareSerial.h> // Software Serial for functions
+
+// Connect motor controller pins to Arduino Digital Pins
+int enA = 9;
+int n1 = 8;
+int in2 = 7;
+
+SoftwareSerial BT(10,11); //RX | TX
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600); //Initialize Serial Monitor
+  BT.begin(9600); //Set baud rate for HC-05 Bluetooth conncection
+  Serial.println("Bluetooth connected!");
+
+  //set all motor control pins to outputs
+  pinMode(enA, OUTPUT);
+  pinMode(in1,OUTPUT);
+  pinMode(in2, OUTPUT);
+
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+
+  if (BT.available()) { // Loop runs if BT connected
+
+    char command = BT.read() // Input Command using bluetooth connection
+    stop(); //Initialize with stationary car
+
+    if (command == 'F') { //Forward
+        forward(); //NEED TO WRITE CODE FOR FORWARD COMMAND void forward
+        Serial.println("Moving forward!");
+
+    } else if (command = 'B') { // Backwards
+      backward();
+      Serial.println("Moving backward!"); //NEED TO WRITE CODE FOR BACKWARDS COMMAND void backward
+
+    } else if (command == 'L') { // Turn Left
+      left();
+      Serial.println("Turning left!");
+
+    } else if (command == 'R') { //Turn Right
+      right();
+      Serial.println("Turning right!");
+
+    }
+
+
+  }
+}
