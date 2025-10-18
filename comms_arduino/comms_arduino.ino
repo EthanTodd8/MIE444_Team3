@@ -37,7 +37,7 @@ void loop()
     // insert code to send fwd_input to Drive Arduino
   }
 
-  else if (str_cmd.startsWith(turn_str)) {  // If driving forward...
+  else if (str_cmd.startsWith(turn_str)) {  // If turning...
     str_cmd.erase(0, 3); // Removes first 3 characters
     int turn_input = stoi(str_cmd); // Converts to integer
     // insert code to send turn_input to Drive Arduino!!!!!!!!!
