@@ -37,11 +37,11 @@ void loop() {
       Serial.println("Moving backward!"); //NEED TO WRITE CODE FOR BACKWARDS COMMAND void backward
 
     } else if (command == 'L') { // Turn Left
-      left();
+      left(); //NEED TO WRITE CODE FOR LEFT COMMAND void left
       Serial.println("Turning left!");
 
     } else if (command == 'R') { //Turn Right
-      right();
+      right(); //NEED TO WRITE CODE FOR RIGHT COMMAND void right
       Serial.println("Turning right!");
 
     }
