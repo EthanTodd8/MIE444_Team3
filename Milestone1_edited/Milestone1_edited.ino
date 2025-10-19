@@ -10,9 +10,9 @@ int enB = 5;
 int in1B = 12; 
 int in2B = 13; 
 
-int set_speed = 100;
+int set_speed = 50;
 
-SoftwareSerial BT(8,9); //RX | TX
+SoftwareSerial BT(9,8); //RX | TX
 
 void setup() {
   // put your setup code here, to run once:
