@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string> // String editing commands
 #include <SoftwareSerial.h>
-SoftwareSerial BTSerial(9, 10); // RX | TX of Bluetooth module
+SoftwareSerial BTSerial(8, 9); // RX | TX of Bluetooth module
 
 // VARS FOR CHECKING CMD INPUTS
 cmd = 0; //holds ascii from serial line
@@ -13,7 +13,7 @@ String turn_str = "r0:";
 #define ENCODERA_A 2  // motor A encoder
 #define ENCODERA_B 4
 
-#define ENCODERB_A 3  // motor B encoder
+#define ENCODERB_A 6  // motor B encoder
 #define ENCODERB_B 8
 
 // Variables to store the number of encoder pulses for each motor
@@ -24,37 +24,79 @@ int fwd_input = 0;
 int turn_input = 0;
 
 // Speed calculations. Must be within 0~255 due to PWM limits
-int fwd_speed = 200; // set fwd speed to something within possible range 0~255
-int turn_speed = 200; // set turn speed to something within possible range 0~255
-float wheel_dia = 2.559; // inches
-float wheel_dist_apart = 8; // inches
+//int fwd_speed = 100; 
+int turn_speed = 100; 
+float wheel_dia = 3; // inches
+float wheel_dist_apart = 8; 
 float ecpr = 10; encoder counts per 1 full motor rotation
 
 
-// connect breadboard pins to Arduino digital pins
-int enA = 9; // motor A controls
-int in1 = 8;
-int in2 = 7;
+// connect redboard pins to Arduino digital pins
+int enA = 6; // motor A controls
+int in1A = 10;
+int in2A = 11;
 
 int enB = 5; // motor B controls
-int in3 = 13;
-int in4 = 14;
+int in1B = 12;
+int in2B = 13;
 
 
+
+
+// FORWARD OR BACKWARD FUNCTIONS
+void moveForward(int fwd_input, int fwd_speed = 100) {
+  // DRIVE FORWARD
+  if (fwd_input > 0 {
+  Serial.println("Forward: ");
+    Serial.print(fwd_input);
+
+    // Forward direction of Motor A
+    digitalWrite(in1A, HIGH);
+    digitalWrite(in2A, LOW);
+    analogWrite(enA, fwd_speed);
+
+    // Forward direction of Motor B
+    digitalWrite(in1B, LOW);
+    digitalWrite(in2B, HIGH);
+    analogWrite(enB, fwd_speed);
+  }
+
+  // DRIVE BACKWARD
+  else if fwd_input < 0 {
+  Serial.println("Backward: ");
+    Serial.print(fwd_input);
+
+    // Backward direction of Motor A
+    digitalWrite(in1A, LOW);
+    digitalWrite(in2A, HIGH);
+    analogWrite(enA, fwd_speed);
+
+    // Backward direction of Motor B
+    digitalWrite(in1B, HIGH);
+    digitalWrite(in2B, LOW);
+    analogWrite(enB, fwd_speed);
+  }
+
+  // Stop when distance reached, based on encoder
+  if abs(motA_count) >= abs(fwd_input) { // Both motors get same counts
+  analogWrite(enA, 0);
+    analogWrite(enB, 0);
+  }
+}
 
 
 void setup()
 {
   // set all the motor control pins to outputs
   pinMode(enA, OUTPUT); // motor A
-  pinMode(in1, OUTPUT);
-  pinMode(in2, OUTPUT);
+  pinMode(in1A, OUTPUT);
+  pinMode(in2A, OUTPUT);
   pinMode(ENCODERA_A, INPUT);
   pinMode(ENCODERA_B, INPUT);
 
   pinMode(enB, OUTPUT); // motor B
-  pinMode(in3, OUTPUT);
-  pinMode(in4, OUTPUT);
+  pinMode(in1B, OUTPUT);
+  pinMode(in2B, OUTPUT);
   pinMode(ENCODERB_A, INPUT);
   pinMode(ENCODERB_B, INPUT);
 
@@ -65,8 +107,8 @@ void setup()
   Serial.begin(9600);
   Serial.println("KIZI is alive!");
   Serial.println("Enter command through Bluetooth: ");
-
   // HC-05 default speed in AT command mode
+
   BTSerial.begin(38400);
 }
 
@@ -89,21 +131,22 @@ void loop()
     if (str_cmd.startsWith(fwd_str)) {  // If driving forward...
       str_cmd.erase(0, 3); // Removes first 3 characters
       int fwd_cmd = stoi(str_cmd); // Takes integer distance input
-      fwd_input = fwd_cmd*ecpr/(wheel_dia*pi); // Counts needed
+      fwd_finput = fwd_cmd * ecpr / (wheel_dia * pi); // Counts needed
 
       // DRIVE FORWARD
+      forward(fwd_finput, fwd_speed);
       if fwd_input > 0 {
       Serial.println("Forward: ");
         Serial.print(fwd_input);
 
         // Forward direction of Motor A
-        digitalWrite(in1, HIGH);
-        digitalWrite(in2, LOW);
+        digitalWrite(in1A, HIGH);
+        digitalWrite(in2A, LOW);
         analogWrite(enA, fwd_speed);
 
         // Forward direction of Motor B
-        digitalWrite(in3, LOW);
-        digitalWrite(in4, HIGH);
+        digitalWrite(in1B, LOW);
+        digitalWrite(in2B, HIGH);
         analogWrite(enB, fwd_speed);
       }
 
@@ -113,16 +156,16 @@ void loop()
         Serial.print(fwd_input);
 
         // Backward direction of Motor A
-        digitalWrite(in1, LOW);
-        digitalWrite(in2, HIGH);
+        digitalWrite(in1A, LOW);
+        digitalWrite(in2A, HIGH);
         analogWrite(enA, fwd_speed);
 
         // Backward direction of Motor B
-        digitalWrite(in3, HIGH);
-        digitalWrite(in4, LOW);
+        digitalWrite(in1B, HIGH);
+        digitalWrite(in2B, LOW);
         analogWrite(enB, fwd_speed);
       }
-      
+
       // Stop when distance reached, based on encoder
       if abs(motA_count) >= abs(fwd_input) { // Both motors get same counts
         analogWrite(enA, 0);
@@ -136,9 +179,9 @@ void loop()
     else if (str_cmd.startsWith(turn_str)) {  // If turning...
       str_cmd.erase(0, 3); // Removes first 3 characters
       int turn_cmd = stoi(str_cmd); // Takes integer angle input
-      float radians_needed = (turn_cmd/2)*pi/180; // Calculating travel distance
-      float travel_dist = radians_needed*wheel_dist_apart/2;
-      turn_input = travel_dist*ecpr/(wheel_dia*pi); // Counts needed
+      float radians_needed = (turn_cmd / 2) * pi / 180; // Calculating travel distance
+      float travel_dist = radians_needed * wheel_dist_apart / 2;
+      turn_input = travel_dist * ecpr / (wheel_dia * pi); // Counts needed
 
 
       // TURN LEFT
@@ -147,13 +190,13 @@ void loop()
         Serial.print(turn_input);
 
         // Forward direction of Motor A
-        digitalWrite(in1, HIGH);
-        digitalWrite(in2, LOW);
+        digitalWrite(in1A, HIGH);
+        digitalWrite(in2A, LOW);
         analogWrite(enA, turn_speed);
 
         // Backward direction of Motor B
-        digitalWrite(in3, HIGH);
-        digitalWrite(in4, LOW);
+        digitalWrite(in1B, HIGH);
+        digitalWrite(in2B, LOW);
         analogWrite(enB, turn_speed);
       }
 
@@ -163,16 +206,16 @@ void loop()
         Serial.print(turn_input);
 
         // Forward direction of Motor A
-        digitalWrite(in1, LOW);
-        digitalWrite(in2, HIGH);
+        digitalWrite(in1A, LOW);
+        digitalWrite(in2A, HIGH);
         analogWrite(enA, turn_speed);
 
         // Backward direction of Motor B
-        digitalWrite(in3, LOW);
-        digitalWrite(in4, HIGH);
+        digitalWrite(in1B, LOW);
+        digitalWrite(in2B, HIGH);
         analogWrite(enB, turn_speed);
       }
-      
+
       // Stop when distance reached, based on encoder
       if abs(motA_count) >= abs(turn_input) { // Both motors get same counts
         analogWrite(enA, 0);
