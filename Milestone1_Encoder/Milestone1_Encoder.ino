@@ -10,7 +10,7 @@ int enB = 5;
 int in1B = 12; 
 int in2B = 13; 
 
-int set_speed_A = 60;
+int set_speed_A = 66;
 int set_speed_B = 50;
 
 SoftwareSerial BT(9,8); //RX | TX
@@ -52,33 +52,36 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-
+  //BT.println("Loop start");
   if (BT.available()) { // Loop runs if BT connected
-
-    char command = BT.read(); // Input Command using bluetooth connection
+  BT.println("message received");
     StopMotor(); //Initialize with stationary car
+    char command = BT.read(); // Input Command using bluetooth connection
+    //StopMotor(); //Initialize with stationary car
+    BT.println(command);
 
     if (command == 's') { //Forward
+        BT.println("Stop commanded");
         StopMotor(); //NEED TO WRITE CODE FOR FORWARD COMMAND void forward
-        Serial.println("Stop");
+        BT.println("Stop");
 
     } else if (command == 'b') { // Backwards
       MoveBackward();
-      Serial.println("Moving backward!"); //NEED TO WRITE CODE FOR BACKWARDS COMMAND void backward
+      BT.println("Moving backward!"); //NEED TO WRITE CODE FOR BACKWARDS COMMAND void backward
 
     } else if (command == 'l') { // Turn Left
       TurnLeft();
-      Serial.println("Turning left!");
+      BT.println("Turning left!");
 
     } else if (command == 'r') { //Turn Right
       TurnRight();
-      Serial.println("Turning right!");
+      BT.println("Turning right!");
 
     } else if (command == 'f') { //Stop Motor
       MoveForward();
-      Serial.println("Moving Forward");
+      BT.println("Moving Forward");
     }
-  delay(2000);
+  //delay(2000);
   }
 }
 
@@ -96,9 +99,9 @@ void MoveForward()
   digitalWrite(in2B, HIGH);
   // set speed to 200 out of possible range 0~255
   analogWrite(enB, set_speed_B);
-  Serial.println("Moving");
+  BT.println("Moving");
 
-  delay(2000);
+ // delay(2000);
 }
 
 void MoveBackward() {
