@@ -1,4 +1,5 @@
 #include <SoftwareSerial.h> // Software Serial for functions
+SoftwareSerial BT(8,9); //RX | TX
 
 // Connect motor controller pins to Arduino Digital Pins
 //Motor 1
@@ -12,7 +13,20 @@ int in2B = 13;
 
 int set_speed = 100;
 
-SoftwareSerial BT(8,9); //RX | TX
+
+
+// ENCODER VARS
+#define ENCODERA_A 2  // motor A encoder
+#define ENCODERA_B 4
+
+#define ENCODERB_A 6  // motor B encoder
+#define ENCODERB_B 8
+
+// Variables to store the number of encoder pulses for each motor
+volatile long motA_count = 0;
+volatile long motB_count = 0;
+
+
 
 void setup() {
   // put your setup code here, to run once:
@@ -149,4 +163,48 @@ void StopMotor() {
 }
 
 
-    
+
+
+// ENCODER EVENT FOR INTERRUPT CALL
+void EncoderEvent() {
+  // MOTOR A
+  if (digitalRead(ENCODERA_A) == HIGH) {
+    if (digitalRead(ENCODERA_B) == LOW) {
+      motA_count++;
+    }
+    else {
+      motA_count--;
+    }
+  }
+
+  else {
+    if (digitalRead(ENCODERA_B) == LOW) {
+      motA_count--;
+    }
+    else {
+      motA_count++;
+    }
+  }
+  Serial.println(motA_count);
+
+  // MOTOR B
+  if (digitalRead(ENCODERB_A) == HIGH) {
+    if (digitalRead(ENCODERB_B) == LOW) {
+      motB_count++;
+    }
+    else {
+      motB_count--;
+    }
+  }
+
+  else {
+    if (digitalRead(ENCODERB_B) == LOW) {
+      motB_count--;
+    }
+    else {
+      motB_count++;
+    }
+  }
+  Serial.println(motB_count);
+
+}    
