@@ -60,24 +60,24 @@ void loop() {
     //StopMotor(); //Initialize with stationary car
     BT.println(command);
 
-    if (command == 's') { //Forward
+    if (command == 'S') { //Forward
         BT.println("Stop commanded");
         StopMotor(); //NEED TO WRITE CODE FOR FORWARD COMMAND void forward
         BT.println("Stop");
 
-    } else if (command == 'b') { // Backwards
+    } else if (command == 'B') { // Backwards
       MoveBackward();
       BT.println("Moving backward!"); //NEED TO WRITE CODE FOR BACKWARDS COMMAND void backward
 
-    } else if (command == 'l') { // Turn Left
+    } else if (command == 'L') { // Turn Left
       TurnLeft();
       BT.println("Turning left!");
 
-    } else if (command == 'r') { //Turn Right
+    } else if (command == 'R') { //Turn Right
       TurnRight();
       BT.println("Turning right!");
 
-    } else if (command == 'f') { //Stop Motor
+    } else if (command == 'F') { //Stop Motor
       MoveForward();
       BT.println("Moving Forward");
     }
