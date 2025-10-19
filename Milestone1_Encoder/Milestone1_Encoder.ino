@@ -101,7 +101,19 @@ void MoveForward()
   analogWrite(enB, set_speed_B);
   BT.println("Moving");
 
- // delay(2000);
+  delay(50);
+
+  digitalWrite(in1A, LOW);
+  digitalWrite(in2A, LOW);
+  // set speed to 200 out of possible range 0~255
+  analogWrite(enA, 0);
+
+  //Motor B
+  digitalWrite(in1B, LOW);
+  digitalWrite(in2B, LOW);
+  // set speed to 200 out of possible range 0~255
+  analogWrite(enB, 0);
+  BT.println("Moving");
 }
 
 void MoveBackward() {
