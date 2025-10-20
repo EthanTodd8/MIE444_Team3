@@ -13,7 +13,7 @@ int in1B = 12;
 int in2B = 13;
 
 int motA_speed = 110;
-int motB_speed = 76;
+int motB_speed = 85;
 
 
 
