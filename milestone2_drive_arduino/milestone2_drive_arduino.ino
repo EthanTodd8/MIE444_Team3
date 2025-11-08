@@ -1,15 +1,15 @@
-//#include <SoftwareSerial.h> // Software Serial for functions
-//SoftwareSerial mySerial (10, 11); //RX | TX 
+#include <SoftwareSerial.h> // Software Serial for functions
+SoftwareSerial BT(9, 8); // RX | TX 
 
 // Connect motor controller pins to Arduino Digital Pins
 //Motor 1
-int enA = 5;
-int in1A = 6;
-int in2A = 7;
+int enA = 6;
+int in1A = 5;
+int in2A = 4;
 //Motor 2
 int enB = 9;
-int in1B = 10;
-int in2B = 11;
+int in1B = 7;
+int in2B = 8;
 
 int motA_speed = 110;
 int motB_speed = 85;
@@ -32,31 +32,31 @@ void loop() {
   if (Serial.available()) { 
     val = Serial.read();
 
-    if (val == 'F') { // drive forward
+    if (val == 'f') { // drive forward
       MoveForward();
       delay(15);
       StopMotor();
       Serial.println(val);
 
-    } else if (val == 'B') { // drive backward
+    } else if (val == 'b') { // drive backward
       MoveBackward();
       delay(15);
       StopMotor();
       Serial.println("backward");
 
-    } else if (val == 'R') { // drive right
+    } else if (val == 'r') { // drive right
       TurnRight();
       delay(15);
       StopMotor();
       Serial.println("right");
 
-    } else if (val == 'L') { // drive left
+    } else if (val == 'l') { // drive left
       TurnLeft();
       delay(15);
       StopMotor();
       Serial.println("left");
 
-    } else if (val == 'S') { //Stop Motor
+    } else if (val == 's') { //Stop Motor
       StopMotor();
       Serial.println("stop");
     }
