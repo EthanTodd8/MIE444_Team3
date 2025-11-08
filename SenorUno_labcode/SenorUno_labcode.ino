@@ -1,5 +1,6 @@
 #include <NewPing.h>
 #include <SoftwareSerial.h>
+SoftwareSerial BT(9, 10); //RX:TX pins
 
 //Need to define all pins for the 5 sensors here
 #define TRIG_PIN 8
@@ -7,7 +8,7 @@
 #define ECHO_PIN_1 12
 #define ECHO_PIN_2 4
 #define ECHO_PIN_3 7
-#define ECHO_PIN_4 2
+#define ECHO_PIN_4 6
 #define MAX_DISTANCE 200
 int irPin = A0; //select analog input pin 
 int irValue = 0; //variable to store sensor value
@@ -19,7 +20,7 @@ NewPing sonar2(TRIG_PIN, ECHO_PIN_2, MAX_DISTANCE);
 NewPing sonar3(TRIG_PIN, ECHO_PIN_3, MAX_DISTANCE);
 NewPing sonar4(TRIG_PIN, ECHO_PIN_4, MAX_DISTANCE);
 
-SoftwareSerial mySerial(10, 11);  // RX | TX
+SoftwareSerial mySerial(2, 3);  // RX | TX
 
 const int numSamples = 10;
 unsigned long samples[numSamples];
@@ -39,10 +40,11 @@ int sum4 = 0;
 void setup() {
   // Start the Serial connection
   Serial.begin(9600);
+  BT.begin(9600);
 }
 void loop() {
-  if (Serial.available() > 0) {
-    char ch = Serial.read();
+  if (BT.available()) {
+    char ch = BT.read();
 
     if (ch == 'u') {
       irValue = analogRead(irPin); 
@@ -112,8 +114,8 @@ void loop() {
     }
   }
 
-  if (mySerial.available()) {
-    char received = mySerial.read();
+  if (Serial.available()) {
+    char received = Serial.read();
     Serial.print("Received from RoverUno: ");
     Serial.println(received);
   }
