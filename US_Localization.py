@@ -122,13 +122,12 @@ def move(p, mask, heading, Move):
 
 # --- INITIAL SETUP ---
 
-# Heading (degrees)
+# Heading (degrees) //get from gyroscope
 heading = 270  # 270° implies downward
 
-# Provide measurements and movements
-m_u = [3, 3, 3, 1, 1, 1, 1, 5, 5, 5, 5, 0, 0, 0, 0, 5, 5, 5, 5, 2, 2, 2, 2, 2, 2]
-m_m = ['w', 'w', 'w', 'd', 'a', 'd', 'w', 'w', 'w', 'w', 'w', 'w', 'w', 'w', 'w',
-       'w', 'w', 'w', 'w', 'w', 'd', 'w', 'w', 'w', 'a']
+# Provide measurements and movements 
+m_u = [3, 3, 3, 1, 1, 1, 1, 5, 5, 5, 5, 0, 0, 0, 0, 5, 5, 5, 5, 2, 2, 2, 2, 2, 2] #Ultrasonic measurements from Sensor 0
+m_m = ['w', 'w', 'w', 'd', 'a', 'd', 'w', 'w', 'w', 'w', 'w', 'w', 'w', 'w', 'w','w', 'w', 'w', 'w', 'w', 'd', 'w', 'w', 'w', 'a'] #Movements
 
 # Initialization of the world
 dim1, dim2 = 32, 16
