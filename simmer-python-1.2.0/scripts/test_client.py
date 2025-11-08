@@ -239,7 +239,7 @@ else:
 
 
 ############## Main section for the communication client ##############
-RUN_COMMUNICATION_CLIENT = True # If true, run this. If false, skip it
+RUN_COMMUNICATION_CLIENT = False # If true, run this. If false, skip it
 while RUN_COMMUNICATION_CLIENT:
     # Input a command
     cmd = input('Type in a string to send: ')
@@ -257,6 +257,9 @@ while RUN_COMMUNICATION_CLIENT:
         print(f"At time '{time_rx}' received from {SOURCE}:\nMalformed Packet")
 
 
+block_loc = input('Enter the block location: ')
+drop_loc = input('Enter the drop-off location: ')
+## WRITE CODE TO CREATE CMD SEQUENCES BASED ON INPUTTED DESTINATIONS ##
 
 
 ############## Main section for the open loop control algorithm ##############
@@ -265,9 +268,9 @@ CMD_SEQUENCE = ['w0:36', 'r0:90', 'w0:36', 'r0:90', 'w0:12', 'r0:-90', 'w0:24', 
 LOOP_PAUSE_TIME = 1 # seconds
 
 # Main loop
-RUN_DEAD_RECKONING = False # If true, run this. If false, skip it
+PHASE2 = False # If true, run this. If false, skip it
 ct = 0
-while RUN_DEAD_RECKONING:
+while PHASE2:
     # Pause for a little while so as to not spam commands insanely fast
     time.sleep(LOOP_PAUSE_TIME)
 
@@ -310,5 +313,5 @@ while RUN_DEAD_RECKONING:
 
     # If the command sequence is complete, finish the program
     else:
-        RUN_DEAD_RECKONING = False
+        PHASE2 = False
         print("Sequence complete!")
