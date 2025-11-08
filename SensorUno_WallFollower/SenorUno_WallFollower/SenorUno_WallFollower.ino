@@ -17,7 +17,7 @@ NewPing sonar2(TRIG_PIN, ECHO_PIN_2, MAX_DISTANCE);
 NewPing sonar3(TRIG_PIN, ECHO_PIN_3, MAX_DISTANCE);
 NewPing sonar4(TRIG_PIN, ECHO_PIN_4, MAX_DISTANCE);
 
-SoftwareSerial mySerial(10, 11);
+//SoftwareSerial mySerial(10, 11);
 
 const int numSamples = 10;
 
@@ -37,7 +37,7 @@ unsigned long getAveragePing(NewPing &sonar) {
 
 void setup() {
   Serial.begin(9600);
-  mySerial.begin(9600);
+  //mySerial.begin(9600);
 }
 
 void loop() {
@@ -49,20 +49,31 @@ void loop() {
       // Read IR
       //int irValue = analogRead(irPin);
 
-      // Compute averages
+      // Compute averages (in micro sec)
       unsigned long avg0 = getAveragePing(sonar0);
       unsigned long avg1 = getAveragePing(sonar1);
       unsigned long avg2 = getAveragePing(sonar2);
       unsigned long avg3 = getAveragePing(sonar3);
       unsigned long avg4 = getAveragePing(sonar4);
 
+      // Compute distances (in cm)
+      float dist0 = (0.5)*(avg0)*(0.034);
+      float dist1 = (0.5)*(avg1)*(0.034);
+      float dist2 = (0.5)*(avg2)*(0.034);
+      float dist3 = (0.5)*(avg3)*(0.034);
+      float dist4 = (0.5)*(avg4)*(0.034);
+
       // Print results
-      Serial.println("Averages:");
-      Serial.print("Sensor 0: "); Serial.println(avg0);
-      Serial.print("Sensor 1: "); Serial.println(avg1);
-      Serial.print("Sensor 2: "); Serial.println(avg2);
-      Serial.print("Sensor 3: "); Serial.println(avg3);
-      Serial.print("Sensor 4: "); Serial.println(avg4);
+      Serial.print(dist0); Serial.print(","); //print results on one line
+      Serial.print(dist1); Serial.print(",");
+      Serial.print(dist2); Serial.print(",");
+      Serial.print(dist3); Serial.print(",");
+      Serial.print(dist4); Serial.print(",");
+      // Serial.print("Sensor 0: "); Serial.println(avg0);
+      // Serial.print("Sensor 1: "); Serial.println(avg1);
+      // Serial.print("Sensor 2: "); Serial.println(avg2);
+      // Serial.print("Sensor 3: "); Serial.println(avg3);
+      // Serial.print("Sensor 4: "); Serial.println(avg4);
       //Serial.print("IR: "); Serial.println(irValue);
 
       Serial.println(".");
@@ -72,7 +83,7 @@ void loop() {
       // Forward rover commands
       for (int i = 0; i < sizeof(rover_cmd_array); i++) {
         if (ch == rover_cmd_array[i]) {
-          mySerial.write(ch);
+         // mySerial.write(ch);
           Serial.print("Sent to rover: ");
           Serial.println(ch);
           break;
@@ -81,9 +92,9 @@ void loop() {
     }
   }
 
-  if (mySerial.available()) {
-    char received = mySerial.read();
-    Serial.print("Received from RoverUno: ");
-    Serial.println(received);
-  }
+  // if (mySerial.available()) {
+  //   //char received = mySerial.read();
+  //   Serial.print("Received from RoverUno: ");
+  //   Serial.println(received);
+  // }
 }
