@@ -1,15 +1,15 @@
-#include <SoftwareSerial.h> // Software Serial for functions
-SoftwareSerial mySerial (10, 11); //RX | TX 
+//#include <SoftwareSerial.h> // Software Serial for functions
+//SoftwareSerial mySerial (10, 11); //RX | TX 
 
 // Connect motor controller pins to Arduino Digital Pins
 //Motor 1
-int enA = 6;
-int in1A = 5;
-int in2A = 4;
+int enA = 5;
+int in1A = 6;
+int in2A = 7;
 //Motor 2
 int enB = 9;
-int in1B = 7;
-int in2B = 8;
+int in1B = 10;
+int in2B = 11;
 
 int motA_speed = 110;
 int motB_speed = 85;
