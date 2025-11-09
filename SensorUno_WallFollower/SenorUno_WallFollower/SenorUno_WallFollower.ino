@@ -24,10 +24,6 @@ int16_t gx, gy, gz;
 #define ECHO_PIN_4 2
 #define MAX_DISTANCE 200
 
-//#define LED_PIN 13
-//bool blinkState = false;
-
-
 //int irPin = A0;
 
 NewPing sonar0(TRIG_PIN, ECHO_PIN_0, MAX_DISTANCE);
@@ -63,30 +59,28 @@ void setup() {
     Fastwire::setup(400, true);
   #endif
     
-  Serial.begin(9600);
+  //Serial.begin(9600);
   BT.begin(9600);
   mySerial.begin(9600);
 
   // initialize gyroscope device
-  Serial.println("Initializing I2C devices...");
+  //Serial.println("Initializing I2C devices...");
   accelgyro.initialize();
 
   // verify gyroscope connection
-  Serial.println("Testing device connections...");
-  Serial.println(accelgyro.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");
-
-  pinMode(LED_PIN, OUTPUT);
+  //Serial.println("Testing device connections...");
+  //Serial.println(accelgyro.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");
 }
 
 
 
 void loop() {
-  Serial.println("start");
+  //Serial.println("start");
   BT.listen();
   if (BT.available() > 0) {
     char ch = BT.read();
-    Serial.print("read:");
-    Serial.println(ch);
+    //Serial.print("read:");
+    //Serial.println(ch);
 
     if (ch == 'u') {
 
@@ -112,7 +106,7 @@ void loop() {
       BT.print(dist1); BT.print(",");
       BT.print(dist2); BT.print(",");
       BT.print(dist3); BT.print(",");
-      BT.print(dist4); BT.print(",");
+      BT.print(dist4); BT.print(","); //print order [Back, Left, Front, Right]
       // Serial.print("Sensor 0: "); Serial.println(avg0);
       // Serial.print("Sensor 1: "); Serial.println(avg1);
       // Serial.print("Sensor 2: "); Serial.println(avg2);
@@ -127,17 +121,9 @@ void loop() {
       accelgyro.getRotation(&gx, &gy, &gz);
 
       #ifdef OUTPUT_READABLE_ACCELGYRO
-        Serial.println(gx); Serial.print("\t");
-        Serial.print("deg/s"); // rotational velocity
-    #endif
-
-    #ifdef OUTPUT_BINARY_ACCELGYRO
-        Serial.write((uint8_t)(gx >> 8)); Serial.write((uint8_t)(gx & 0xFF));
-    #endif
-
-    
-    //blinkState = !blinkState; // blink LED to indicate activity
-    //digitalWrite(LED_PIN, blinkState);
+        //Serial.println(gx); Serial.print("\t");
+        //Serial.print("deg/s"); // rotational velocity
+      #endif
     }
 
     else {  

@@ -11,7 +11,7 @@ int enB = 9;
 int in1B = 10;
 int in2B = 11;
 
-int motA_speed = 110;
+int motA_speed = 100;
 int motB_speed = 85;
 
 char val = 0;  //holds ascii from serial line
@@ -35,25 +35,25 @@ void loop() {
 
     if (val == 'F') { // drive forward
       MoveForward();
-      delay(15);
+      delay(250);
       StopMotor();
       mySerial.println(val);
 
     } else if (val == 'B') { // drive backward
       MoveBackward();
-      delay(15);
+      delay(250);
       StopMotor();
       mySerial.println("backward");
 
     } else if (val == 'R') { // drive right
       TurnRight();
-      delay(15);
+      delay(100);
       StopMotor();
       mySerial.println("right");
 
     } else if (val == 'L') { // drive left
       TurnLeft();
-      delay(15);
+      delay(100);
       StopMotor();
       mySerial.println("left");
 
@@ -78,7 +78,7 @@ void StopMotor() {
   analogWrite(enB, 0);
 }
 
-void MoveForward() {
+void MoveBackward() {
   //Motor A
   digitalWrite(in1A, LOW);
   digitalWrite(in2A, HIGH);
@@ -91,7 +91,7 @@ void MoveForward() {
 }
 
 
-void MoveBackward() {
+void MoveForward() {
   //Motor A
   digitalWrite(in1A, HIGH);
   digitalWrite(in2A, LOW);
@@ -103,7 +103,7 @@ void MoveBackward() {
   analogWrite(enB, motB_speed);
 }
 
-void TurnRight() {
+void TurnLeft() {
   //Motor A
   digitalWrite(in1A, LOW);
   digitalWrite(in2A, HIGH);
@@ -116,7 +116,7 @@ void TurnRight() {
 }
 
 
-void TurnLeft() {
+void TurnRight() {
   //Motor A
   digitalWrite(in1A, HIGH);
   digitalWrite(in2A, LOW);

@@ -26,9 +26,9 @@ def read_us():
     case = True
     values = []
     send = 'u'
-    print('reading_us')
+    #print('reading_us') #Debug statement
     while case is True:
-        print('sending')
+        #print('sending') #Debug statement
         ser.write(send.encode('utf-8')) #sends us cmd to Arduino
         time.sleep(0.001) #add delay
         line = ser.readline().strip().decode('ascii')
@@ -37,7 +37,7 @@ def read_us():
         if line:
             # Split using ',' as the delimiter
             values_str = line.split(',') # List to store unltrasonic sensor readings into [Back, Left, Front, Right]
-            print(values_str)
+            #print(values_str)
             case = False
             for i in range(len((values_str))-1):
                 values.append(float(values_str[i]))
@@ -64,9 +64,9 @@ RUN = True
 SLEEP_TIME = 0.001
 
 while RUN:
-    time.sleep(SLEEP_TIME)
+    #time.sleep(SLEEP_TIME)
     print('running')
-    readings = read_us()
+    readings = read_us() #readings in format [Back, Left, Front, Right]
     print(readings)
     if (readings[2]<A) and (readings[1]<B) and (readings[3]<B):
         move_right()
