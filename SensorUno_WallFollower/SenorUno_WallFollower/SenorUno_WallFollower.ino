@@ -13,9 +13,6 @@ MPU6050 accelgyro;
 int16_t ax, ay, az; 
 int16_t gx, gy, gz;
 
-#define OUTPUT_READABLE_ACCELGYRO
-#define OUTPUT_BINARY_ACCELGYRO
-
 #define TRIG_PIN 8
 #define ECHO_PIN_0 13
 #define ECHO_PIN_1 12
@@ -123,22 +120,25 @@ void loop() {
       BT.println(".");
     }
 
+    // GYROSCOPE
     else if (ch == 'g') {
       accelgyro.getRotation(&gx, &gy, &gz);
 
-      #ifdef OUTPUT_READABLE_ACCELGYRO
         Serial.println(gx); Serial.print("\t");
         Serial.print("deg/s"); // rotational velocity
     #endif
 
-    #ifdef OUTPUT_BINARY_ACCELGYRO
-        Serial.write((uint8_t)(gx >> 8)); Serial.write((uint8_t)(gx & 0xFF));
-    #endif
-
-    
-    //blinkState = !blinkState; // blink LED to indicate activity
-    //digitalWrite(LED_PIN, blinkState);
+    // Take avg readings
+    unsigned long sum_r = 0;
+    for (int i = 0; i < numSamples; i++) {
+      sum_r += accelgyro.getRotation(&gx)*0.02; // converting to rotation
+      delay(20);
     }
+    float avg_r = (sum_r / numSamples);
+    
+    BT.print(avg_r);
+    }
+
 
     else {  
       // Forward rover commands
