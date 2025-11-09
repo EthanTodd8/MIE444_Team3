@@ -4,7 +4,7 @@ import time
 #import csv
 import numpy as np
 
-ser = serial.Serial('COM9', 9600, timeout=0) # Initialize COM port
+ser = serial.Serial('COM3', 9600, timeout=0) # Initialize COM port
 
 ##Command Codes
 read_us = 'u'

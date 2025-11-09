@@ -23,13 +23,25 @@ def transmit(data):
     
 def readUs():
     '''Function asks sensor board to take a reading of the ultrasonic sensors by sending 'u' over serial'''
-    ser.write('u'.encode()) #sends us cmd to Arduino
-    time.sleep(0.5) #add delay
-    line = ser.readline().strip().decode('ascii')
+    case = True
+    Values = []
+    while case == True:
+        ser.write('u'.encode('ascii')) #sends us cmd to Arduino
+        time.sleep(0.5) #add delay
+        line = ser.readline().strip().decode('ascii')
+        print(line)
 
-    # Split using ',' as the delimiter
-    Values = line.split(',') # List to store unltrasonic sensor readings into [Back, Left, Front, Right]
-    return Values
+        if line:
+            # Split using ',' as the delimiter
+            Values_str = line.split(',') # List to store unltrasonic sensor readings into [Back, Left, Front, Right]
+            print(Values_str)
+            case = False
+            for i in range(len((Values_str))-1):
+                Values.append(float(Values_str[i]))
+            return Values
+            
+        else:
+            case = True
     
 def MoveForward():
     '''Function to move rover forward by sending 'F' '''
@@ -49,6 +61,7 @@ def MoveLeft():
     
     
 readings = readUs()
+print(readings)
     
 if (readings[2]<A) and (readings[1]<B) and (readings[3]<B):
     MoveRight()

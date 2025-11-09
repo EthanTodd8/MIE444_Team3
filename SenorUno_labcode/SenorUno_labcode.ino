@@ -41,6 +41,7 @@ void setup() {
   // Start the Serial connection
   Serial.begin(9600);
   BT.begin(9600);
+  mySerial.begin(9600);
 }
 void loop() {
   if (BT.available()) {
