@@ -1,6 +1,8 @@
 #include <NewPing.h>
 #include <SoftwareSerial.h>
+
 SoftwareSerial BT(9, 10); //RX:TX pins
+SoftwareSerial mySerial(2, 3);  // RX | TX
 
 //Need to define all pins for the 5 sensors here
 #define TRIG_PIN 8
@@ -20,8 +22,6 @@ NewPing sonar2(TRIG_PIN, ECHO_PIN_2, MAX_DISTANCE);
 NewPing sonar3(TRIG_PIN, ECHO_PIN_3, MAX_DISTANCE);
 NewPing sonar4(TRIG_PIN, ECHO_PIN_4, MAX_DISTANCE);
 
-SoftwareSerial mySerial(2, 3);  // RX | TX
-
 const int numSamples = 10;
 unsigned long samples[numSamples];
 unsigned long pingTime0;
@@ -30,7 +30,7 @@ unsigned long pingTime2;
 unsigned long pingTime3;
 unsigned long pingTime4;
 
-char rover_cmd_array[] = { 'f', 'b', 'l', 'r', 's'};
+char rover_cmd_array[] = { 'F', 'B', 'L', 'R', 'S'};
 int sum0 = 0;
 int sum1 = 0;
 int sum2 = 0;
@@ -115,8 +115,8 @@ void loop() {
     }
   }
 
-  if (Serial.available()) {
-    char received = Serial.read();
+  if (mySerial.available()) {
+    char received = mySerial.read();
     Serial.print("Received from RoverUno: ");
     Serial.println(received);
   }
