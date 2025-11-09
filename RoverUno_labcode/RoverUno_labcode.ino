@@ -18,6 +18,7 @@ char val = 0;  //holds ascii from serial line
 
 void setup() {
   Serial.begin(9600);
+  mySerial.begin(9600);
   Serial.println("KISI Rover Uno is alive!");
 
   pinMode(enA, OUTPUT);

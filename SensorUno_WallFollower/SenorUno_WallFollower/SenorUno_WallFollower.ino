@@ -17,11 +17,12 @@ NewPing sonar2(TRIG_PIN, ECHO_PIN_2, MAX_DISTANCE);
 NewPing sonar3(TRIG_PIN, ECHO_PIN_3, MAX_DISTANCE);
 NewPing sonar4(TRIG_PIN, ECHO_PIN_4, MAX_DISTANCE);
 
-//SoftwareSerial mySerial(10, 11);
+SoftwareSerial BT(9, 10);
+SoftwareSerial mySerial(2, 3);  // RX | TX
 
 const int numSamples = 10;
 
-char rover_cmd_array[] = { 'f', 'b', 'l', 'r', 's' };
+char rover_cmd_array[] = { 'F', 'B', 'L', 'R', 'S' };
 
 // Helper function: Get the average ping for one sonar
 unsigned long getAveragePing(NewPing &sonar) {
@@ -37,12 +38,17 @@ unsigned long getAveragePing(NewPing &sonar) {
 
 void setup() {
   Serial.begin(9600);
-  //mySerial.begin(9600);
+  BT.begin(9600);
+  mySerial.begin(9600);
 }
 
 void loop() {
-  if (Serial.available() > 0) {
-    char ch = Serial.read();
+  Serial.println("start");
+  BT.listen();
+  if (BT.available() > 0) {
+    char ch = BT.read();
+    Serial.print("read:");
+    Serial.println(ch);
 
     if (ch == 'u') {
 
@@ -64,11 +70,11 @@ void loop() {
       float dist4 = (0.5)*(avg4)*(0.034);
 
       // Print results
-      Serial.print(dist0); Serial.print(","); //print results on one line
-      Serial.print(dist1); Serial.print(",");
-      Serial.print(dist2); Serial.print(",");
-      Serial.print(dist3); Serial.print(",");
-      Serial.print(dist4); Serial.print(",");
+      BT.print(dist0); BT.print(","); //print results on one line
+      BT.print(dist1); BT.print(",");
+      BT.print(dist2); BT.print(",");
+      BT.print(dist3); BT.print(",");
+      BT.print(dist4); BT.print(",");
       // Serial.print("Sensor 0: "); Serial.println(avg0);
       // Serial.print("Sensor 1: "); Serial.println(avg1);
       // Serial.print("Sensor 2: "); Serial.println(avg2);
@@ -76,16 +82,16 @@ void loop() {
       // Serial.print("Sensor 4: "); Serial.println(avg4);
       //Serial.print("IR: "); Serial.println(irValue);
 
-      Serial.println(".");
+      BT.println(".");
     }
 
     else {  
       // Forward rover commands
       for (int i = 0; i < sizeof(rover_cmd_array); i++) {
         if (ch == rover_cmd_array[i]) {
-         // mySerial.write(ch);
-          Serial.print("Sent to rover: ");
-          Serial.println(ch);
+          mySerial.write(ch);
+          //Serial.print("Sent to rover: ");
+          //Serial.println(ch);
           break;
         }
       }

@@ -3,7 +3,7 @@ import serial
 
 ### Serial Setup ###
 BAUDRATE = 9600         # Baudrate in bps
-PORT_SERIAL = 'COM3'    # COM port identification
+PORT_SERIAL = 'COM7'    # COM port identification
 TIMEOUT_SERIAL = 1      # Serial port timeout, in seconds
 
 ser = serial.Serial(PORT_SERIAL, BAUDRATE, timeout=TIMEOUT_SERIAL)
@@ -25,9 +25,12 @@ def read_us():
     '''Function asks sensor board to take a reading of the ultrasonic sensors by sending 'u' over serial'''
     case = True
     values = []
+    send = 'u'
+    print('reading_us')
     while case is True:
-        ser.write('u'.encode('ascii')) #sends us cmd to Arduino
-        time.sleep(0.5) #add delay
+        print('sending')
+        ser.write(send.encode('utf-8')) #sends us cmd to Arduino
+        time.sleep(0.001) #add delay
         line = ser.readline().strip().decode('ascii')
         print(line)
 
@@ -62,6 +65,7 @@ SLEEP_TIME = 0.001
 
 while RUN:
     time.sleep(SLEEP_TIME)
+    print('running')
     readings = read_us()
     print(readings)
     if (readings[2]<A) and (readings[1]<B) and (readings[3]<B):
