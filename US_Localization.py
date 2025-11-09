@@ -123,11 +123,11 @@ def move(p, mask, heading, Move):
 # --- INITIAL SETUP ---
 
 # Heading (degrees) //get from gyroscope
-heading = 0 # 270° implies downward
+heading = 270 # 270° implies downward
 
 # Provide measurements and movements 
 m_u = [3, 3, 3, 1, 1, 1, 1, 5, 5, 5, 5, 0, 0, 0, 0, 5, 5, 5, 5, 2, 2, 2, 2, 2, 2] #Ultrasonic measurements from Sensor 0,1,2,3,4. 
-m_m = ['F', 'F', 'F', 'R', 'L'] #Movements
+m_m = ['F', 'F', 'F', 'F', 'F'] #Movements
 #m_m = ['F', 'F', 'F', 'R', 'L', 'R', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F','F', 'F', 'F', 'F', 'F', 'R', 'F', 'F', 'F', 'L'] #Movements
 
 # Initialization of the world
@@ -209,12 +209,12 @@ M = np.abs(M - 1)
 M = M[1:-1, 1:-1]
 
 #Visualize Ultrasonic Map with Zones 
-plt.imshow(ultra, cmap='plasma', origin='upper')
-for i in range(ultra.shape[0]):
-    for j in range(ultra.shape[1]):
-        plt.text(j, i, f"{int(ultra[i, j])}", ha='center', va='center', color='white', fontsize=6)
-plt.title("Ultrasonic Map with Zone Labels")
-plt.show()
+# plt.imshow(ultra, cmap='plasma', origin='upper')
+# for i in range(ultra.shape[0]):
+#     for j in range(ultra.shape[1]):
+#         plt.text(j, i, f"{int(ultra[i, j])}", ha='center', va='center', color='white', fontsize=6)
+# plt.title("Ultrasonic Map with Zone Labels")
+# plt.show()
 
 # plt.figure()
 # plt.imshow((bw + 1) * M, cmap='gray')
