@@ -1,5 +1,20 @@
 #include <NewPing.h>
 #include <SoftwareSerial.h>
+#include "I2Cdev.h"
+#include "MPU6050.h"
+
+// Arduino Wire library is required if I2Cdev I2CDEV_ARDUINO_WIRE implementation is used in I2Cdev.h
+#if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
+    #include "Wire.h"
+#endif
+
+MPU6050 accelgyro;
+
+int16_t ax, ay, az; 
+int16_t gx, gy, gz;
+
+#define OUTPUT_READABLE_ACCELGYRO
+#define OUTPUT_BINARY_ACCELGYRO
 
 #define TRIG_PIN 8
 #define ECHO_PIN_0 13
@@ -8,6 +23,10 @@
 #define ECHO_PIN_3 7
 #define ECHO_PIN_4 2
 #define MAX_DISTANCE 200
+
+//#define LED_PIN 13
+//bool blinkState = false;
+
 
 //int irPin = A0;
 
@@ -37,10 +56,29 @@ unsigned long getAveragePing(NewPing &sonar) {
 }
 
 void setup() {
+  // join I2C bus (I2Cdev library doesn't do this automatically)
+  #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
+    Wire.begin();
+  #elif I2CDEV_IMPLEMENTATION == I2CDEV_BUILTIN_FASTWIRE
+    Fastwire::setup(400, true);
+  #endif
+    
   Serial.begin(9600);
   BT.begin(9600);
   mySerial.begin(9600);
+
+  // initialize gyroscope device
+  Serial.println("Initializing I2C devices...");
+  accelgyro.initialize();
+
+  // verify gyroscope connection
+  Serial.println("Testing device connections...");
+  Serial.println(accelgyro.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");
+
+  pinMode(LED_PIN, OUTPUT);
 }
+
+
 
 void loop() {
   Serial.println("start");
@@ -83,6 +121,23 @@ void loop() {
       //Serial.print("IR: "); Serial.println(irValue);
 
       BT.println(".");
+    }
+
+    else if (ch == 'g') {
+      accelgyro.getRotation(&gx, &gy, &gz);
+
+      #ifdef OUTPUT_READABLE_ACCELGYRO
+        Serial.println(gx); Serial.print("\t");
+        Serial.print("deg/s"); // rotational velocity
+    #endif
+
+    #ifdef OUTPUT_BINARY_ACCELGYRO
+        Serial.write((uint8_t)(gx >> 8)); Serial.write((uint8_t)(gx & 0xFF));
+    #endif
+
+    
+    //blinkState = !blinkState; // blink LED to indicate activity
+    //digitalWrite(LED_PIN, blinkState);
     }
 
     else {  
