@@ -118,26 +118,23 @@ void loop() {
     else if (ch == 'g') {
       accelgyro.getRotation(&gx, &gy, &gz);
 
-<<<<<<< HEAD
       #ifdef OUTPUT_READABLE_ACCELGYRO
         //Serial.println(gx); Serial.print("\t");
         //Serial.print("deg/s"); // rotational velocity
       #endif
-=======
-        Serial.println(gx); Serial.print("\t");
-        Serial.print("deg/s"); // rotational velocity
-    #endif
+        //Serial.println(gx); Serial.print("\t");
+        //Serial.print("deg/s"); // rotational velocity
+      
 
     // Take avg readings
-    unsigned long sum_r = 0;
-    for (int i = 0; i < numSamples; i++) {
-      sum_r += accelgyro.getRotation(&gx)*0.02; // converting to rotation
-      delay(20);
->>>>>>> b21ddcb92ef9fa0eb4c4f8ba952a769240022675
-    }
-    float avg_r = (sum_r / numSamples);
+    //unsigned long sum_r = 0;
+    //for (int i = 0; i < numSamples; i++) {
+      //sum_r += accelgyro.getRotation(&gx)*0.02; // converting to rotation
+      //delay(20);
+    //}
+    //float avg_r = (sum_r / numSamples);
     
-    BT.print(avg_r);
+      BT.print(gx);
     }
 
 

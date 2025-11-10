@@ -43,6 +43,29 @@ def read_us():
                 values.append(float(values_str[i]))
             return values
         case = True
+        
+def read_g():
+    '''Function asks sensor board to take gyroscope reading'''
+    case = True
+    values = []
+    send = 'g'
+    #print('reading_us') #Debug statement
+    while case is True:
+        #print('sending') #Debug statement
+        ser.write(send.encode('utf-8')) #sends us cmd to Arduino
+        time.sleep(0.001) #add delay
+        line = ser.readline().strip().decode('ascii')
+        print(line)
+
+        if line:
+            # Split using ',' as the delimiter
+            values_str = line.split(',') # List to store unltrasonic sensor readings into [Back, Left, Front, Right]
+            #print(values_str)
+            case = False
+            for i in range(len((values_str))-1):
+                values.append(float(values_str[i]))
+            return values
+        case = True
 
 def move_forward():
     '''Function to move rover forward by sending 'F' '''
@@ -67,7 +90,9 @@ while RUN:
     #time.sleep(SLEEP_TIME)
     print('running')
     readings = read_us() #readings in format [Back, Left, Front, Right]
+    #g_readings = read_g()
     print(readings)
+    #print(g_readings)
     if (readings[2]<A) and (readings[1]<B) and (readings[3]<B):
         move_right()
     elif readings[2] > C:
