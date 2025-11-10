@@ -11,8 +11,8 @@ int enB = 9;
 int in1B = 10;
 int in2B = 11;
 
-int motA_speed = 100;
-int motB_speed = 85;
+int motA_speed = 45;
+int motB_speed = 35;
 
 char val = 0;  //holds ascii from serial line
 
@@ -35,25 +35,25 @@ void loop() {
 
     if (val == 'F') { // drive forward
       MoveForward();
-      delay(250);
-      StopMotor();
+      //delay(250);
+      //StopMotor();
       mySerial.println(val);
 
     } else if (val == 'B') { // drive backward
       MoveBackward();
-      delay(250);
+      delay(150);
       StopMotor();
       mySerial.println("backward");
 
     } else if (val == 'R') { // drive right
       TurnRight();
-      delay(100);
+      delay(700);
       StopMotor();
       mySerial.println("right");
 
     } else if (val == 'L') { // drive left
       TurnLeft();
-      delay(100);
+      delay(700);
       StopMotor();
       mySerial.println("left");
 

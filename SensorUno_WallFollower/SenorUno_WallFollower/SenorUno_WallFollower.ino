@@ -32,7 +32,7 @@ NewPing sonar4(TRIG_PIN, ECHO_PIN_4, MAX_DISTANCE);
 SoftwareSerial BT(9, 10);
 SoftwareSerial mySerial(2, 3);  // RX | TX
 
-const int numSamples = 10;
+const int numSamples = 5;
 
 char rover_cmd_array[] = { 'F', 'B', 'L', 'R', 'S' };
 
@@ -42,7 +42,7 @@ unsigned long getAveragePing(NewPing &sonar) {
 
   for (int i = 0; i < numSamples; i++) {
     sum += sonar.ping();
-    delay(20);
+    delay(10);
   }
 
   return sum / numSamples;
@@ -135,6 +135,7 @@ void loop() {
     //float avg_r = (sum_r / numSamples);
     
       BT.print(gx);
+      BT.println(",");
     }
 
 

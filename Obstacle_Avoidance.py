@@ -32,7 +32,7 @@ def read_us():
         ser.write(send.encode('utf-8')) #sends us cmd to Arduino
         time.sleep(0.001) #add delay
         line = ser.readline().strip().decode('ascii')
-        print(line)
+        #print(line)
 
         if line:
             # Split using ',' as the delimiter
@@ -55,7 +55,7 @@ def read_g():
         ser.write(send.encode('utf-8')) #sends us cmd to Arduino
         time.sleep(0.001) #add delay
         line = ser.readline().strip().decode('ascii')
-        print(line)
+        #print(line)
 
         if line:
             # Split using ',' as the delimiter
@@ -82,11 +82,17 @@ def move_right():
 def move_left():
     '''Function to move rover left by sending 'L' '''
     transmit('L')
+    
+def stop():
+    '''Function to stop rover motors from moving'''
+    transmit('S')
 
-RUN = True
+RUN_NEW = True
+RUN_PREV = not RUN_NEW
 SLEEP_TIME = 0.001
 
-while RUN:
+### Previous logic sequence with small steps, run this if the rover has a move forward function that stops after a time delay ###
+while RUN_PREV:
     #time.sleep(SLEEP_TIME)
     print('running')
     readings = read_us() #readings in format [Back, Left, Front, Right]
@@ -108,6 +114,19 @@ while RUN:
     elif (readings[3] > readings[1]) & (readings[2] > (readings[2])):
         move_left()
     elif (readings[1] > readings[3]) & (readings[1] > (readings[2])):
+        move_right()
+    else:
+        move_forward()
+    readings.clear()
+    
+### New logic based on continuous drive ###
+while RUN_NEW:
+    print('running_new')
+    readings = read_us() #readings in format [Back, Left, Front, Right]
+    print(readings)
+    if readings[2]<20:
+        stop()
+        move_backward()
         move_right()
     else:
         move_forward()
