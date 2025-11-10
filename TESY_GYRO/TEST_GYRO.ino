@@ -4,19 +4,13 @@
 #include "MPU6050_6Axis_MotionApps20.h"
 //#include "MPU6050.h"
 
-
-
 // Arduino Wire library is required if I2Cdev I2CDEV_ARDUINO_WIRE implementation is used in I2Cdev.h
 #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
     #include "Wire.h"
 #endif
 
-//MPU6050 accelgyro;
 MPU6050 mpu;
-
-//#define OUTPUT_READABLE_QUATERNION
 #define OUTPUT_READABLE_EULER
-//#define OUTPUT_READABLE_YAWPITCHROLL
 
 // MPU control/status vars
 bool dmpReady = false;  // set true if DMP init was successful
@@ -43,10 +37,6 @@ volatile bool mpuInterrupt = false;     // indicates whether MPU interrupt pin h
 void dmpDataReady() {
     mpuInterrupt = true;
 }
-
-//int16_t ax, ay, az; 
-//int16_t gx, gy, gz;
-
 
 
 #define TRIG_PIN 8
@@ -87,7 +77,7 @@ unsigned long getAveragePing(NewPing &sonar) {
 
 
 void setup() {
-  // join I2C bus (I2Cdev library doesn't do this automatically)
+  // join I2C bus
   #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
     Wire.begin();
     TWBR = 24; // 400kHz I2C clock (200kHz if CPU is 8MHz)
@@ -95,7 +85,7 @@ void setup() {
     Fastwire::setup(400, true);
   #endif
     
-  Serial.begin(9600);
+  //Serial.begin(9600);
   //while (!Serial); // wait for Leonardo enumeration, others continue immediately
   
   BT.begin(9600);
@@ -103,44 +93,36 @@ void setup() {
 
   mpu.initialize(); // initialize gyroscope device
 
-  //Serial.println(F("\nSend any character to begin DMP programming and demo: "));
-  //while (Serial.available() && Serial.read()); // empty buffer
-  //while (!Serial.available());                 // wait for data
-  //while (Serial.available() && Serial.read()); // empty buffer again
-
-//  while (BT.available() && BT.read() == 'g'); // empty buffer
-  //while (!BT.available());                    // wait for data
-  //while (BT.available() && BT.read() == 'g'); // empty buffer again
+  //BT.println(F("\nSend any character to begin DMP programming and demo: "));
+  //while (BT.available() && BT.read()); // empty buffer
+  //while (!BT.available());             // wait for data
+  //while (BT.available() && BT.read()); // empty buffer again
 
   devStatus = mpu.dmpInitialize(); // load and configure the DMP for gyroscope
 
   // GYRO OFFSETS
   mpu.setXGyroOffset(220);
-  //mpu.setYGyroOffset(76);
-  //mpu.setZGyroOffset(-85);
-  //mpu.setZAccelOffset(1788); // 1688 factory default for my test chip
+  mpu.setYGyroOffset(76);
+  mpu.setZGyroOffset(-85);
+  mpu.setZAccelOffset(1788); // 1688 factory default for my test chip
 
   // make sure it worked (returns 0 if so)
   if (devStatus == 0) {
-      mpu.setDMPEnabled(true); // turn DMP on
-      attachInterrupt(0, dmpDataReady, RISING); // enable Arduino interrupt detection
-      mpuIntStatus = mpu.getIntStatus();
-      dmpReady = true; // set our DMP Ready flag so the main loop() function knows it's okay to use it
-      packetSize = mpu.dmpGetFIFOPacketSize(); // get expected DMP packet size for later comparison
+    mpu.setDMPEnabled(true); // turn DMP on
+    attachInterrupt(0, dmpDataReady, RISING); // enable Arduino interrupt detection
+    mpuIntStatus = mpu.getIntStatus();
+    dmpReady = true; // set our DMP Ready flag so the main loop() function knows it's okay to use it
+    packetSize = mpu.dmpGetFIFOPacketSize(); // get expected DMP packet size for later comparison
   } 
-
 }
 
 
-
 void loop() {
-  //Serial.println("start");
   BT.listen();
   if (BT.available() > 0) {
     char ch = BT.read();
-    //Serial.print("read:");
-    //Serial.println(ch);
 
+    // ULTRASONIC SENSORS
     if (ch == 'u') {
 
       // Read IR
@@ -166,13 +148,6 @@ void loop() {
       BT.print(dist2); BT.print(",");
       BT.print(dist3); BT.print(",");
       BT.print(dist4); BT.print(","); //print order [Back, Left, Front, Right]
-      // Serial.print("Sensor 0: "); Serial.println(avg0);
-      // Serial.print("Sensor 1: "); Serial.println(avg1);
-      // Serial.print("Sensor 2: "); Serial.println(avg2);
-      // Serial.print("Sensor 3: "); Serial.println(avg3);
-      // Serial.print("Sensor 4: "); Serial.println(avg4);
-      //Serial.print("IR: "); Serial.println(irValue);
-
       BT.println(".");
     }
 
@@ -181,31 +156,32 @@ void loop() {
     else if (ch == 'g') {
       if (!dmpReady) return; // if programming failed, don't try to do anything
 
-      // reset interrupt flag and get INT_STATUS byte
-      mpuInterrupt = false;
+      mpuInterrupt = false; // reset interrupt flag and get INT_STATUS byte
       mpuIntStatus = mpu.getIntStatus();
 
-      // get current FIFO count
-      fifoCount = mpu.getFIFOCount();
+      fifoCount = mpu.getFIFOCount(); // get current FIFO count
 
-      // check for overflow (this should never happen unless our code is too inefficient)
+      // if overflow, reset it
       if ((mpuIntStatus & 0x10) || fifoCount == 1024) {
-        mpu.resetFIFO(); // reset so we can continue cleanly
+        mpu.resetFIFO(); 
+        Serial.println(F("FIFO overflow!"));
 
       // otherwise, check for DMP data ready interrupt (this should happen frequently)
       } else if (mpuIntStatus & 0x02) {
-        while (fifoCount < packetSize) fifoCount = mpu.getFIFOCount(); // wait for correct available data length
+        // wait for correct available data length, should be a VERY short wait
+        while (fifoCount < packetSize) fifoCount = mpu.getFIFOCount();
 
-        mpu.getFIFOBytes(fifoBuffer, packetSize); // read a packet from FIFO
+        // read a packet from FIFO
+        mpu.getFIFOBytes(fifoBuffer, packetSize);
         
         // track FIFO count here in case there is > 1 packet available
         // (this lets us immediately read more without waiting for an interrupt)
         fifoCount -= packetSize;
 
         #ifdef OUTPUT_READABLE_EULER
-            mpu.dmpGetQuaternion(&q, fifoBuffer);
-            mpu.dmpGetEuler(euler, &q);
-            Serial.print(euler[0] * 180/M_PI); Serial.print(","); // x gyro, degrees
+          mpu.dmpGetQuaternion(&q, fifoBuffer);
+          mpu.dmpGetEuler(euler, &q);
+          BT.print(euler[0] * 180/M_PI); BT.print(",");
         #endif
       }
     }
