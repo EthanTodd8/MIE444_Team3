@@ -9,12 +9,12 @@ TIMEOUT_SERIAL = 1      # Serial port timeout, in seconds
 ser = serial.Serial(PORT_SERIAL, BAUDRATE, timeout=TIMEOUT_SERIAL)
 
 ### Limit Variables ###
-A = 17.78
+'''A = 17.78
 B = 13.97
 C = 76.2
 D = 8.13
 E = 25.4
-F = 38.1
+F = 38.1'''
 
 
 def transmit(data):
@@ -32,7 +32,7 @@ def read_us():
         ser.write(send.encode('utf-8')) #sends us cmd to Arduino
         time.sleep(0.001) #add delay
         line = ser.readline().strip().decode('ascii')
-        #print(line)
+        print(line)
 
         if line:
             # Split using ',' as the delimiter
@@ -55,7 +55,7 @@ def read_g():
         ser.write(send.encode('utf-8')) #sends us cmd to Arduino
         time.sleep(0.001) #add delay
         line = ser.readline().strip().decode('ascii')
-        #print(line)
+        print(line)
 
         if line:
             # Split using ',' as the delimiter
@@ -82,52 +82,29 @@ def move_right():
 def move_left():
     '''Function to move rover left by sending 'L' '''
     transmit('L')
-    
-def stop():
-    '''Function to stop rover motors from moving'''
-    transmit('S')
 
-RUN_NEW = True
-RUN_PREV = not RUN_NEW
+RUN = True
 SLEEP_TIME = 0.001
 
-### Previous logic sequence with small steps, run this if the rover has a move forward function that stops after a time delay ###
-while RUN_PREV:
-    #time.sleep(SLEEP_TIME)
+while RUN:
+    time.sleep(SLEEP_TIME)  # Pause Time 
     print('running')
-    readings = read_us() #readings in format [Back, Left, Front, Right]
-    #g_readings = read_g()
-    print(readings)
-    #print(g_readings)
-    if (readings[2]<A) and (readings[1]<B) and (readings[3]<B):
-        move_right()
-    elif readings[2] > C:
-        move_forward()
-    elif readings[1] < D:
-        move_left()
-    elif readings[3] < D:
-        move_right()
-    elif readings[2] > E:
-        move_forward()
-    elif (readings[1] > F) & (readings[2] > F):
-        move_forward()
-    elif (readings[3] > readings[1]) & (readings[2] > (readings[2])):
-        move_left()
-    elif (readings[1] > readings[3]) & (readings[1] > (readings[2])):
-        move_right()
-    else:
-        move_forward()
-    readings.clear()
+
+    cmd = input('Enter char: ')
+    if cmd == 'u':
+        readings = read_us() #readings in format [Back, Left, Front, Right]
+        print(readings)
     
-### New logic based on continuous drive ###
-while RUN_NEW:
-    print('running_new')
-    readings = read_us() #readings in format [Back, Left, Front, Right]
-    print(readings)
-    if readings[2]<20:
-        stop()
-        move_backward()
-        move_right()
-    else:
+    elif cmd == 'f':
         move_forward()
+
+    elif cmd == 'r':
+        move_right()
+
+    elif cmd == 'l':
+        move_left()
+
+    elif cmd == 'b':
+        move_backward()
+        
     readings.clear()

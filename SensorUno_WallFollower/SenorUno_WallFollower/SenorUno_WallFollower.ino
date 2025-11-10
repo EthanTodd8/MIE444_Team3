@@ -13,9 +13,6 @@ MPU6050 accelgyro;
 int16_t ax, ay, az; 
 int16_t gx, gy, gz;
 
-#define OUTPUT_READABLE_ACCELGYRO
-#define OUTPUT_BINARY_ACCELGYRO
-
 #define TRIG_PIN 8
 #define ECHO_PIN_0 13
 #define ECHO_PIN_1 12
@@ -23,10 +20,6 @@ int16_t gx, gy, gz;
 #define ECHO_PIN_3 7
 #define ECHO_PIN_4 2
 #define MAX_DISTANCE 200
-
-//#define LED_PIN 13
-//bool blinkState = false;
-
 
 //int irPin = A0;
 
@@ -39,7 +32,7 @@ NewPing sonar4(TRIG_PIN, ECHO_PIN_4, MAX_DISTANCE);
 SoftwareSerial BT(9, 10);
 SoftwareSerial mySerial(2, 3);  // RX | TX
 
-const int numSamples = 10;
+const int numSamples = 5;
 
 char rover_cmd_array[] = { 'F', 'B', 'L', 'R', 'S' };
 
@@ -49,7 +42,7 @@ unsigned long getAveragePing(NewPing &sonar) {
 
   for (int i = 0; i < numSamples; i++) {
     sum += sonar.ping();
-    delay(20);
+    delay(10);
   }
 
   return sum / numSamples;
@@ -63,30 +56,28 @@ void setup() {
     Fastwire::setup(400, true);
   #endif
     
-  Serial.begin(9600);
+  //Serial.begin(9600);
   BT.begin(9600);
   mySerial.begin(9600);
 
   // initialize gyroscope device
-  Serial.println("Initializing I2C devices...");
+  //Serial.println("Initializing I2C devices...");
   accelgyro.initialize();
 
   // verify gyroscope connection
-  Serial.println("Testing device connections...");
-  Serial.println(accelgyro.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");
-
-  pinMode(LED_PIN, OUTPUT);
+  //Serial.println("Testing device connections...");
+  //Serial.println(accelgyro.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");
 }
 
 
 
 void loop() {
-  Serial.println("start");
+  //Serial.println("start");
   BT.listen();
   if (BT.available() > 0) {
     char ch = BT.read();
-    Serial.print("read:");
-    Serial.println(ch);
+    //Serial.print("read:");
+    //Serial.println(ch);
 
     if (ch == 'u') {
 
@@ -112,7 +103,7 @@ void loop() {
       BT.print(dist1); BT.print(",");
       BT.print(dist2); BT.print(",");
       BT.print(dist3); BT.print(",");
-      BT.print(dist4); BT.print(",");
+      BT.print(dist4); BT.print(","); //print order [Back, Left, Front, Right]
       // Serial.print("Sensor 0: "); Serial.println(avg0);
       // Serial.print("Sensor 1: "); Serial.println(avg1);
       // Serial.print("Sensor 2: "); Serial.println(avg2);
@@ -123,22 +114,30 @@ void loop() {
       BT.println(".");
     }
 
+    // GYROSCOPE
     else if (ch == 'g') {
       accelgyro.getRotation(&gx, &gy, &gz);
 
       #ifdef OUTPUT_READABLE_ACCELGYRO
-        Serial.println(gx); Serial.print("\t");
-        Serial.print("deg/s"); // rotational velocity
-    #endif
+        //Serial.println(gx); Serial.print("\t");
+        //Serial.print("deg/s"); // rotational velocity
+      #endif
+        //Serial.println(gx); Serial.print("\t");
+        //Serial.print("deg/s"); // rotational velocity
+      
 
-    #ifdef OUTPUT_BINARY_ACCELGYRO
-        Serial.write((uint8_t)(gx >> 8)); Serial.write((uint8_t)(gx & 0xFF));
-    #endif
-
+    // Take avg readings
+    //unsigned long sum_r = 0;
+    //for (int i = 0; i < numSamples; i++) {
+      //sum_r += accelgyro.getRotation(&gx)*0.02; // converting to rotation
+      //delay(20);
+    //}
+    //float avg_r = (sum_r / numSamples);
     
-    //blinkState = !blinkState; // blink LED to indicate activity
-    //digitalWrite(LED_PIN, blinkState);
+      BT.print(gx);
+      BT.println(",");
     }
+
 
     else {  
       // Forward rover commands
