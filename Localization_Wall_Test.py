@@ -288,6 +288,7 @@ sensor_down = []
 sensor_total = []
 CMD_LIST = []
 
+
 if AUTOMATIC:
     # Pause for a little while so as to not spam commands insanely fast
     time.sleep(LOOP_PAUSE_TIME)
@@ -298,7 +299,7 @@ if AUTOMATIC:
     print(f"Ultrasonic 0 reading: {response_string('u0',responses)}")
     print(responses)
     sensor_front.append(float(responses[0][1]))
-    sensor_total.append(float(responses[0][1]))
+    sensor_total.append((2.54 * float(responses[0][1]))) #convert to cm
     print(sensor_total)
 
     # Check an ultrasonic sensor 'u1'
@@ -307,7 +308,7 @@ if AUTOMATIC:
     print(f"Ultrasonic 1 reading: {response_string('u1',responses)}")
     print(responses)
     sensor_right.append(float(responses[0][1]))
-    sensor_total.append(float(responses[0][1]))
+    sensor_total.append(2.54 * float(responses[0][1]))
     print(sensor_total)
 
     # Check an ultrasonic sensor 'u2'
@@ -316,7 +317,7 @@ if AUTOMATIC:
     print(f"Ultrasonic 2 reading: {response_string('u2', responses)}")
     print(responses)
     sensor_left.append(float(responses[0][1]))
-    sensor_total.append(float(responses[0][1]))
+    sensor_total.append(2.54 * float(responses[0][1]))
     print(sensor_total)
     
     # Check an ultrasonic sensor 'u3'
@@ -325,7 +326,7 @@ if AUTOMATIC:
     print(f"Ultrasonic 3 reading: {response_string('u3', responses)}")
     print(responses)
     sensor_back.append(float(responses[0][1]))
-    sensor_total.append(float(responses[0][1]))
+    sensor_total.append(2.54 * float(responses[0][1]))
     print(sensor_total)
     
     # Check an ultrasonic sensor 'u4'
@@ -333,7 +334,7 @@ if AUTOMATIC:
     [responses,time_rx] = receive()
     print(f"Ultrasonic 4 reading: {response_string('u4', responses)}")
     print(responses)
-    sensor_total.append(float(responses[0][1]))
+    sensor_total.append(2.54* float(responses[0][1]))
     sensor_down.append(float(responses[0][1]))
     print(sensor_total)
     
@@ -355,7 +356,7 @@ if AUTOMATIC:
         [responses, time_rx] = receive()
         print(f"Ultrasonic 0 reading: {response_string('u0',responses)}")
         sensor_front.append(float(responses[0][1]))
-        sensor_total.append(float(responses[0][1]))
+        sensor_total.append(2.54 * float(responses[0][1]))
         print(sensor_front[counter])
 
         # Check an ultrasonic sensor 'u1'
@@ -364,7 +365,7 @@ if AUTOMATIC:
         print(f"Ultrasonic 1 reading: {response_string('u1',responses)}")
         print(responses)
         sensor_right.append(float(responses[0][1]))
-        sensor_total.append(float(responses[0][1]))
+        sensor_total.append(2.54 * float(responses[0][1]))
         print(sensor_right[counter])
 
         # Check an ultrasonic sensor 'u2'
@@ -373,26 +374,26 @@ if AUTOMATIC:
         print(f"Ultrasonic 2 reading: {response_string('u2', responses)}")
         print(responses)
         sensor_left.append(float(responses[0][1]))
-        sensor_total.append(float(responses[0][1]))
+        sensor_total.append(2.54 * float(responses[0][1]))
         print(sensor_left[counter])
 
         #Check an ultrasonic sensor 'u3'
         transmit(packetize('u3'))
         [responses,time_rx] = receive()
         sensor_back.append(float(responses[0][1]))
-        sensor_total.append(float(responses[0][1]))
+        sensor_total.append(2.54 * float(responses[0][1]))
         
         
         #Check an ultrasonic sensor 'u4'
         transmit(packetize('u3'))
         [responses,time_rx] = receive()
         sensor_back.append(float(responses[0][1]))
-        sensor_total.append(float(responses[0][1]))
+        sensor_total.append(2.54 * float(responses[0][1]))
         print(sensor_total)
         print(CMD_LIST)
         
         if  sensor_front[counter] > 5:
-            packet_tx = packetize('w0:1')
+            packet_tx = packetize('w0:6')
             CMD_LIST.append('F')
             if packet_tx:
                 transmit(packet_tx)
@@ -418,7 +419,7 @@ if AUTOMATIC:
         transmit(packetize('u0'))
         [responses, time_rx] = receive()
         print(f"Ultrasonic 0 reading: {response_string('u0',responses)}")
-        sensor_total.append(float(responses[0][1]))
+        sensor_total.append(2.54* float(responses[0][1]))
         sensor_front.append(float(responses[0][1]))
         print(sensor_front[counter])
 
@@ -427,7 +428,7 @@ if AUTOMATIC:
         [responses,time_rx] = receive()
         print(f"Ultrasonic 1 reading: {response_string('u1',responses)}")
         print(responses)
-        sensor_total.append(float(responses[0][1]))
+        sensor_total.append(2.54* float(responses[0][1]))
         sensor_right.append(float(responses[0][1]))
         print(sensor_right[counter])
 
@@ -436,7 +437,7 @@ if AUTOMATIC:
         [responses,time_rx] = receive()
         print(f"Ultrasonic 2 reading: {response_string('u2', responses)}")
         print(responses)
-        sensor_total.append(float(responses[0][1]))
+        sensor_total.append(2.54 * float(responses[0][1]))
         sensor_left.append(float(responses[0][1]))
         print(sensor_left[counter])
         
@@ -444,19 +445,19 @@ if AUTOMATIC:
         transmit(packetize('u3'))
         [responses,time_rx] = receive()
         sensor_back.append(float(responses[0][1]))
-        sensor_total.append(float(responses[0][1]))
+        sensor_total.append(2.54 * float(responses[0][1]))
         
         #Check an ultrasonic sensor 'u4'
         transmit(packetize('u4'))
         [responses,time_rx] = receive()
         sensor_down.append(float(responses[0][1]))
-        sensor_total.append(float(responses[0][1]))
+        sensor_total.append(2.54 * float(responses[0][1]))
         
         print(sensor_total)
         print(CMD_LIST)
 
         if  sensor_front[counter] > 5:
-            packet_tx = packetize('w0:1')
+            packet_tx = packetize('w0:6')
             CMD_LIST.append('F')
             if packet_tx:
                 transmit(packet_tx)
