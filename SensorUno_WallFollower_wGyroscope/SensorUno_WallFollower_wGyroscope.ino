@@ -14,9 +14,9 @@
 //MPU6050 accelgyro;
 MPU6050 mpu;
 
-#define OUTPUT_READABLE_QUATERNION
+//#define OUTPUT_READABLE_QUATERNION
 #define OUTPUT_READABLE_EULER
-#define OUTPUT_READABLE_YAWPITCHROLL
+//#define OUTPUT_READABLE_YAWPITCHROLL
 
 // MPU control/status vars
 bool dmpReady = false;  // set true if DMP init was successful
@@ -96,16 +96,35 @@ void setup() {
   #endif
     
   //Serial.begin(9600);
+  //while (!Serial); // wait for Leonardo enumeration, others continue immediately
+  
   BT.begin(9600);
   mySerial.begin(9600);
 
-  // initialize gyroscope device
-  //Serial.println("Initializing I2C devices...");
-  accelgyro.initialize();
+  mpu.initialize(); // initialize gyroscope device
 
-  // verify gyroscope connection
-  //Serial.println("Testing device connections...");
-  //Serial.println(accelgyro.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");
+  //Serial.println(F("\nSend any character to begin DMP programming and demo: "));
+  //while (Serial.available() && Serial.read()); // empty buffer
+  //while (!Serial.available());                 // wait for data
+  //while (Serial.available() && Serial.read()); // empty buffer again
+
+  devStatus = mpu.dmpInitialize(); // load and configure the DMP for gyroscope
+
+  // GYRO OFFSETS
+  mpu.setXGyroOffset(220);
+  //mpu.setYGyroOffset(76);
+  //mpu.setZGyroOffset(-85);
+  //mpu.setZAccelOffset(1788); // 1688 factory default for my test chip
+
+  // make sure it worked (returns 0 if so)
+  if (devStatus == 0) {
+      mpu.setDMPEnabled(true); // turn DMP on
+      attachInterrupt(0, dmpDataReady, RISING); // enable Arduino interrupt detection
+      mpuIntStatus = mpu.getIntStatus();
+      dmpReady = true; // set our DMP Ready flag so the main loop() function knows it's okay to use it
+      packetSize = mpu.dmpGetFIFOPacketSize(); // get expected DMP packet size for later comparison
+  } 
+
 }
 
 
@@ -153,29 +172,40 @@ void loop() {
       BT.println(".");
     }
 
+    
     // GYROSCOPE
     else if (ch == 'g') {
-      accelgyro.getRotation(&gx, &gy, &gz);
+      if (!dmpReady) return; // if programming failed, don't try to do anything
 
-      #ifdef OUTPUT_READABLE_ACCELGYRO
-        //Serial.println(gx); Serial.print("\t");
-        //Serial.print("deg/s"); // rotational velocity
-      #endif
-        //Serial.println(gx); Serial.print("\t");
-        //Serial.print("deg/s"); // rotational velocity
-      
+      // reset interrupt flag and get INT_STATUS byte
+      mpuInterrupt = false;
+      mpuIntStatus = mpu.getIntStatus();
 
-    // Take avg readings
-    unsigned long sum_r = 0;
-    for (int i = 0; i < numSamples; i++) {
-      sum_r += accelgyro.getRotation(&gx)*0.02; // converting to rotation
-      delay(20);
+      // get current FIFO count
+      fifoCount = mpu.getFIFOCount();
+
+      // check for overflow (this should never happen unless our code is too inefficient)
+      if ((mpuIntStatus & 0x10) || fifoCount == 1024) {
+        mpu.resetFIFO(); // reset so we can continue cleanly
+
+      // otherwise, check for DMP data ready interrupt (this should happen frequently)
+      } else if (mpuIntStatus & 0x02) {
+        while (fifoCount < packetSize) fifoCount = mpu.getFIFOCount(); // wait for correct available data length
+
+        mpu.getFIFOBytes(fifoBuffer, packetSize); // read a packet from FIFO
+        
+        // track FIFO count here in case there is > 1 packet available
+        // (this lets us immediately read more without waiting for an interrupt)
+        fifoCount -= packetSize;
+
+        #ifdef OUTPUT_READABLE_EULER
+            mpu.dmpGetQuaternion(&q, fifoBuffer);
+            mpu.dmpGetEuler(euler, &q);
+            BT.print(euler[0] * 180/M_PI); // x gyro, degrees
+        #endif
+      }
     }
-    float avg_r = (sum_r / numSamples);
-    
-      BT.print(gx);
-      BT.println(",");
-    }
+
 
 
     else {  
