@@ -16,6 +16,7 @@ D = 8.13
 E = 25.4
 F = 38.1'''
 
+readings = []
 
 def transmit(data):
     '''Function to transmit data over serial connection'''
@@ -23,12 +24,13 @@ def transmit(data):
 
 def read_us():
     '''Function asks sensor board to take a reading of the ultrasonic sensors by sending 'u' over serial'''
+    print('in func')
     case = True
     values = []
     send = 'u'
     #print('reading_us') #Debug statement
     while case is True:
-        #print('sending') #Debug statement
+        print('sending') #Debug statement
         ser.write(send.encode('utf-8')) #sends us cmd to Arduino
         time.sleep(0.001) #add delay
         line = ser.readline().strip().decode('ascii')
@@ -52,7 +54,7 @@ def read_g():
     #print('reading_us') #Debug statement
     while case is True:
         #print('sending') #Debug statement
-        ser.write(send.encode('utf-8')) #sends us cmd to Arduino
+        ser.write(send.encode('utf-8')) #sends g cmd to Arduino
         time.sleep(0.001) #add delay
         line = ser.readline().strip().decode('ascii')
         print(line)
@@ -92,19 +94,24 @@ while RUN:
 
     cmd = input('Enter char: ')
     if cmd == 'u':
+        print('u')
         readings = read_us() #readings in format [Back, Left, Front, Right]
         print(readings)
+        
+    elif cmd =='g':
+        readings = read_g()
+        print(readings)
     
-    elif cmd == 'f':
+    elif cmd == 'F':
         move_forward()
 
-    elif cmd == 'r':
+    elif cmd == 'R':
         move_right()
 
-    elif cmd == 'l':
+    elif cmd == 'L':
         move_left()
 
-    elif cmd == 'b':
+    elif cmd == 'B':
         move_backward()
         
     readings.clear()
