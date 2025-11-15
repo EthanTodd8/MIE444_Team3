@@ -2,8 +2,7 @@
 #include "MPU6050_6Axis_MotionApps20.h"
 //#include "MPU6050.h" // not necessary if using MotionApps include file
 
-// Arduino Wire library is required if I2Cdev I2CDEV_ARDUINO_WIRE implementation
-// is used in I2Cdev.h
+// Arduino Wire library is required if I2Cdev I2CDEV_ARDUINO_WIRE implementation is used in I2Cdev.h
 #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
     #include "Wire.h"
 #endif
@@ -33,12 +32,7 @@ float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gra
 // packet structure for InvenSense teapot demo
 uint8_t teapotPacket[14] = { '$', 0x02, 0,0, 0,0, 0,0, 0,0, 0x00, 0x00, '\r', '\n' };
 
-
-
-// ================================================================
-// ===               INTERRUPT DETECTION ROUTINE                ===
-// ================================================================
-
+// INTERRUPT DETECTION ROUTINE
 volatile bool mpuInterrupt = false;     // indicates whether MPU interrupt pin has gone high
 void dmpDataReady() {
     mpuInterrupt = true;
@@ -56,15 +50,15 @@ void setup() {
     #endif
 
     Serial.begin(9600);
-    while (!Serial); // wait for Leonardo enumeration, others continue immediately
+    //while (!Serial); // wait for Leonardo enumeration, others continue immediately
 
     mpu.initialize();
 
     // wait for ready
     Serial.println(F("\nSend 'g' to begin DMP programming and demo: "));
-    while (Serial.available() && Serial.read() == 'g'); // empty buffer
+    while (Serial.available() && Serial.read()) // empty buffer
     while (!Serial.available());                 // wait for data
-    while (Serial.available() && Serial.read() == 'g'); // empty buffer again
+    while (Serial.available() && Serial.read()); // empty buffer again
 
     devStatus = mpu.dmpInitialize(); // load and configure the DMP
 
@@ -126,8 +120,7 @@ void loop() {
         #ifdef OUTPUT_READABLE_EULER
             mpu.dmpGetQuaternion(&q, fifoBuffer);
             mpu.dmpGetEuler(euler, &q);
-            Serial.print(euler[0] * 180/M_PI);
-            Serial.print(",");
+            Serial.print(euler[0] * 180/M_PI); Serial.print(",");
         #endif
     }
 }

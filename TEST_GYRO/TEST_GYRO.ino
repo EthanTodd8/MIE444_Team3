@@ -4,9 +4,8 @@
 #include "MPU6050_6Axis_MotionApps20.h"
 //#include "MPU6050.h"
 
-// Arduino Wire library is required if I2Cdev I2CDEV_ARDUINO_WIRE implementation is used in I2Cdev.h
 #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
-    #include "Wire.h"
+  #include "Wire.h"
 #endif
 
 MPU6050 mpu;
@@ -35,7 +34,7 @@ uint8_t teapotPacket[14] = { '$', 0x02, 0,0, 0,0, 0,0, 0,0, 0x00, 0x00, '\r', '\
 // INTERRUPT DETECTION ROUTINE
 volatile bool mpuInterrupt = false;     // indicates whether MPU interrupt pin has gone high
 void dmpDataReady() {
-    mpuInterrupt = true;
+  mpuInterrupt = true;
 }
 
 
@@ -85,14 +84,19 @@ void setup() {
     Fastwire::setup(400, true);
   #endif
     
-  //Serial.begin(9600);
-  //while (!Serial); // wait for Leonardo enumeration, others continue immediately
-  
+  Serial.begin(9600);
+  while (!Serial); // wait for Leonardo enumeration, others continue immediately
   BT.begin(9600);
   mySerial.begin(9600);
 
   mpu.initialize(); // initialize gyroscope device
 
+/*
+  Serial.println(F("\nSend any character to begin DMP programming and demo: "));
+  while (Serial.available() && Serial.read()); // empty buffer
+  while (!Serial.available());             // wait for data
+  while (Serial.available() && Serial.read()); // empty buffer again
+*/
   //BT.println(F("\nSend any character to begin DMP programming and demo: "));
   //while (BT.available() && BT.read()); // empty buffer
   //while (!BT.available());             // wait for data
@@ -118,9 +122,9 @@ void setup() {
 
 
 void loop() {
-  BT.listen();
-  if (BT.available() > 0) {
-    char ch = BT.read();
+  //BT.listen();
+  if (Serial.available() > 0) {
+    char ch = Serial.read();
 
     // ULTRASONIC SENSORS
     if (ch == 'u') {
@@ -142,6 +146,7 @@ void loop() {
       float dist3 = (0.5)*(avg3)*(0.034);
       float dist4 = (0.5)*(avg4)*(0.034);
 
+      /*
       // Print results
       BT.print(dist0); BT.print(","); //print results on one line
       BT.print(dist1); BT.print(",");
@@ -149,14 +154,21 @@ void loop() {
       BT.print(dist3); BT.print(",");
       BT.print(dist4); BT.print(","); //print order [Back, Left, Front, Right]
       BT.println(".");
+      */
+
+      // Visual Representation
+      BT.print("...... F:"); BT.print(dist2); BT.print("......"); 
+      BT.print(".. L:"); BT.print(dist1); BT.print(" .. R:"); BT.print(dist4); BT.print(" .."); 
+      BT.print("...... B:"); BT.print(dist0); BT.print("......"); 
+      BT.println(".");
     }
 
     
     // GYROSCOPE
     else if (ch == 'g') {
-      if (!dmpReady) return; // if programming failed, don't try to do anything
+      //if (!dmpReady) return; // if programming failed, don't try to do anything
 
-      mpuInterrupt = false; // reset interrupt flag and get INT_STATUS byte
+      //mpuInterrupt = false; // reset interrupt flag and get INT_STATUS byte
       mpuIntStatus = mpu.getIntStatus();
 
       fifoCount = mpu.getFIFOCount(); // get current FIFO count
@@ -164,10 +176,11 @@ void loop() {
       // if overflow, reset it
       if ((mpuIntStatus & 0x10) || fifoCount == 1024) {
         mpu.resetFIFO(); 
-        Serial.println(F("FIFO overflow!"));
+        //Serial.println(F("FIFO overflow!"));
 
       // otherwise, check for DMP data ready interrupt (this should happen frequently)
-      } else if (mpuIntStatus & 0x02) {
+      }  
+      while (!(mpu.getIntStatus() & 0x02));
         // wait for correct available data length, should be a VERY short wait
         while (fifoCount < packetSize) fifoCount = mpu.getFIFOCount();
 
@@ -181,9 +194,9 @@ void loop() {
         #ifdef OUTPUT_READABLE_EULER
           mpu.dmpGetQuaternion(&q, fifoBuffer);
           mpu.dmpGetEuler(euler, &q);
-          BT.print(euler[0] * 180/M_PI); BT.print(",");
+          Serial.print(euler[0] * 180/M_PI); Serial.print(",");
         #endif
-      }
+      
     }
 
 
