@@ -1,9 +1,9 @@
 #include <NewPing.h>
 #include <SoftwareSerial.h>
-#include "I2Cdev.h"
-#include "MPU6050_6Axis_MotionApps20.h"
+//#include "I2Cdev.h"
+//#include "MPU6050_6Axis_MotionApps20.h"
 //#include "MPU6050.h"
-
+/*
 
 
 // Arduino Wire library is required if I2Cdev I2CDEV_ARDUINO_WIRE implementation is used in I2Cdev.h
@@ -12,14 +12,14 @@
 #endif
 
 //MPU6050 accelgyro;
-MPU6050 mpu;
+//MPU6050 mpu;
 
 #define OUTPUT_READABLE_QUATERNION
 #define OUTPUT_READABLE_EULER
 #define OUTPUT_READABLE_YAWPITCHROLL
-
+*/
 // MPU control/status vars
-bool dmpReady = false;  // set true if DMP init was successful
+/*bool dmpReady = false;  // set true if DMP init was successful
 uint8_t mpuIntStatus;   // holds actual interrupt status byte from MPU
 uint8_t devStatus;      // return status after each device operation (0 = success, !0 = error)
 uint16_t packetSize;    // expected DMP packet size (default is 42 bytes)
@@ -48,7 +48,7 @@ void dmpDataReady() {
 //int16_t gx, gy, gz;
 
 
-
+*/
 #define TRIG_PIN 8
 #define ECHO_PIN_0 13
 #define ECHO_PIN_1 12
@@ -88,12 +88,12 @@ unsigned long getAveragePing(NewPing &sonar) {
 
 void setup() {
   // join I2C bus (I2Cdev library doesn't do this automatically)
-  #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
+  /*#if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
     Wire.begin();
     TWBR = 24; // 400kHz I2C clock (200kHz if CPU is 8MHz)
   #elif I2CDEV_IMPLEMENTATION == I2CDEV_BUILTIN_FASTWIRE
     Fastwire::setup(400, true);
-  #endif
+  #endif*/
     
   //Serial.begin(9600);
   BT.begin(9600);
@@ -101,7 +101,7 @@ void setup() {
 
   // initialize gyroscope device
   //Serial.println("Initializing I2C devices...");
-  accelgyro.initialize();
+  //accelgyro.initialize();
 
   // verify gyroscope connection
   //Serial.println("Testing device connections...");
@@ -152,7 +152,7 @@ void loop() {
 
       BT.println(".");
     }
-
+/*
     // GYROSCOPE
     else if (ch == 'g') {
       accelgyro.getRotation(&gx, &gy, &gz);
@@ -176,7 +176,7 @@ void loop() {
       BT.print(gx);
       BT.println(",");
     }
-
+*/
 
     else {  
       // Forward rover commands

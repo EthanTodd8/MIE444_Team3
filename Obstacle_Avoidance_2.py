@@ -3,20 +3,10 @@ import serial
 
 ### Serial Setup ###
 BAUDRATE = 9600         # Baudrate in bps
-PORT_SERIAL = 'COM7'    # COM port identification
+PORT_SERIAL = 'COM8'    # COM port identification
 TIMEOUT_SERIAL = 1      # Serial port timeout, in seconds
 
 ser = serial.Serial(PORT_SERIAL, BAUDRATE, timeout=TIMEOUT_SERIAL)
-
-### Limit Variables ###
-'''A = 17.78
-B = 13.97
-C = 76.2
-D = 8.13
-E = 25.4
-F = 38.1'''
-
-readings = []
 
 def transmit(data):
     '''Function to transmit data over serial connection'''
@@ -24,17 +14,16 @@ def transmit(data):
 
 def read_us():
     '''Function asks sensor board to take a reading of the ultrasonic sensors by sending 'u' over serial'''
-    print('in func')
     case = True
     values = []
     send = 'u'
     #print('reading_us') #Debug statement
     while case is True:
-        print('sending') #Debug statement
+        #print('sending') #Debug statement
         ser.write(send.encode('utf-8')) #sends us cmd to Arduino
         time.sleep(0.001) #add delay
         line = ser.readline().strip().decode('ascii')
-        print(line)
+        #print(line)
 
         if line:
             # Split using ',' as the delimiter
@@ -54,10 +43,10 @@ def read_g():
     #print('reading_us') #Debug statement
     while case is True:
         #print('sending') #Debug statement
-        ser.write(send.encode('utf-8')) #sends g cmd to Arduino
+        ser.write(send.encode('utf-8')) #sends us cmd to Arduino
         time.sleep(0.001) #add delay
         line = ser.readline().strip().decode('ascii')
-        print(line)
+        #print(line)
 
         if line:
             # Split using ',' as the delimiter
@@ -84,34 +73,53 @@ def move_right():
 def move_left():
     '''Function to move rover left by sending 'L' '''
     transmit('L')
-
-RUN = True
-SLEEP_TIME = 0.001
-
-while RUN:
-    time.sleep(SLEEP_TIME)  # Pause Time 
-    print('running')
-
-    cmd = input('Enter char: ')
-    if cmd == 'u':
-        print('u')
-        readings = read_us() #readings in format [Back, Left, Front, Right]
-        print(readings)
-        
-    elif cmd =='g':
-        readings = read_g()
-        print(readings)
     
-    elif cmd == 'F':
-        move_forward()
+def stop():
+    '''Function to stop rover motors from moving'''
+    transmit('S')
 
-    elif cmd == 'R':
-        move_right()
+## Time & Counter Set-Up
+SLEEP_TIME = 0.001
+counter = 0
 
-    elif cmd == 'L':
-        move_left()
+## Determine whether left or right wall-following
+readings = read_us() #readings in format [Back, Left, Front, Right]
+print(readings)
 
-    elif cmd == 'B':
-        move_backward()
-        
-    readings.clear()
+if readings[3]> readings[1]:  #if RIGHT distance > LEFT distance, follow the LEFT wall
+    LZ_R = False # Follow Left Wall
+    LZ_L = True
+    print(LZ_R, LZ_L)
+
+else: 
+    LZ_R = True # Follow Right Wall
+    LZ_L = False
+    print(LZ_R, LZ_L)
+
+### Previous logic sequence with small steps, run this if the rover has a move forward function that stops after a time delay ###
+
+while LZ_L: 
+    time.sleep(SLEEP_TIME) # delay to not overload with readings
+    counter += 1
+
+    #Check US Sensor Readings 
+    readings = read_us() #readings in format [Back, Left, Front, Right]
+    print(readings)     
+
+    if readings[2] > 10:
+       transmit('F')
+
+    elif readings[3] > 10: 
+        transmit('R')
+        time.sleep(SLEEP_TIME)
+        transmit('R')
+
+    elif readings[1] > 10:
+        transmit('L')
+        time.sleep(SLEEP_TIME)
+        transmit('L')
+    
+    elif readings[2] < 10 and readings[3] < 10 and readings [1] < 10:
+        LZ_L = False # Stop Loop
+        path_1 = print ('Rover is at bottom right portion of the map, use path_1 to loading zone.')
+    

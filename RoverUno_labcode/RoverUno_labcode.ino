@@ -11,15 +11,15 @@ int enB = 9;
 int in1B = 10;
 int in2B = 11;
 
-int motA_speed = 45;
-int motB_speed = 35;
+int motA_speed = 52;
+int motB_speed = 42;
 
 char val = 0;  //holds ascii from serial line
 
 void setup() {
-  Serial.begin(9600);
+  //Serial.begin(9600);
   mySerial.begin(9600);
-  Serial.println("KISI Rover Uno is alive!");
+  //Serial.println("KISI Rover Uno is alive!");
 
   pinMode(enA, OUTPUT);
   pinMode(in1A, OUTPUT);
@@ -35,25 +35,25 @@ void loop() {
 
     if (val == 'F') { // drive forward
       MoveForward();
-      //delay(250);
-      //StopMotor();
+      delay(250);
+      StopMotor();
       mySerial.println(val);
 
     } else if (val == 'B') { // drive backward
       MoveBackward();
-      delay(150);
+      delay(250);
       StopMotor();
       mySerial.println("backward");
 
     } else if (val == 'R') { // drive right
       TurnRight();
-      delay(700);
+      delay(855);
       StopMotor();
       mySerial.println("right");
 
     } else if (val == 'L') { // drive left
       TurnLeft();
-      delay(700);
+      delay(725);
       StopMotor();
       mySerial.println("left");
 
