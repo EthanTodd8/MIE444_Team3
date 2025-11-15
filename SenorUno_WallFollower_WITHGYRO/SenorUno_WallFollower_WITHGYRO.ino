@@ -184,7 +184,7 @@ void loop() {
         #ifdef OUTPUT_READABLE_EULER
           mpu.dmpGetQuaternion(&q, fifoBuffer);
           mpu.dmpGetEuler(euler, &q);
-          Serial.print(euler[0] * 180/M_PI); Serial.print(",");
+          BT.print(euler[0] * 180/M_PI); BT.print(",");
         #endif
     }
 
