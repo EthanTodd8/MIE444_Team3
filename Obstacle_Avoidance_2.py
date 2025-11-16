@@ -3,7 +3,7 @@ import serial
 
 ### Serial Setup ###
 BAUDRATE = 9600         # Baudrate in bps
-PORT_SERIAL = 'COM8'    # COM port identification
+PORT_SERIAL = 'COM7'    # COM port identification
 TIMEOUT_SERIAL = 1      # Serial port timeout, in seconds
 
 ser = serial.Serial(PORT_SERIAL, BAUDRATE, timeout=TIMEOUT_SERIAL)
@@ -58,6 +58,7 @@ def read_g():
             return values
         case = True
 
+
 def move_forward():
     '''Function to move rover forward by sending 'F' '''
     transmit('F')
@@ -66,21 +67,53 @@ def move_backward():
     '''Function to move rover backward by sending 'B' '''
     transmit('B')
 
-def move_right():
+def move_right_big():
     '''Function to move rover right by sending 'R' '''
     transmit('R')
 
-def move_left():
+def move_right_small():
+    ''' Function to move rover right be a small increment by sending 'r' '''
+    transmit('r')
+
+def move_left_big():
     '''Function to move rover left by sending 'L' '''
     transmit('L')
+
+def move_left_small():
+    ''' Function to move rover left by a small increment by sending 'l' '''
+    transmit('l')
     
 def stop():
     '''Function to stop rover motors from moving'''
     transmit('S')
 
+def Obstacle_Avoidance_Forward(g_ref, g_current):
+    #Check Difference In Reading
+    g_measured = g_current - g_ref
+    
+    #Check for 3 degrees difference between reference orientation and current reading
+
+    while g_measured > 3: #If the distance is greater than 3 degrees, then the rover is too far to the right and needs to reorient left 
+            move_left_small() # re-orient by small step to the left and re-calculate delta
+            g_current = read_g()
+            g_measured = g_current - g_ref
+
+    while g_measured < 3: #If the distance is less than 3 degrees, then the rover is too far to the left and needs to reorient to the right
+            move_right_small() #re-orient by small step to the right and re-calculate delta
+            g_current = read_g()
+            g_measured = g_current - g_ref
+
+    return(g_current) # Returns corrected current orientation
+
+
 ## Time & Counter Set-Up
 SLEEP_TIME = 0.001
 counter = 0
+
+## Inititalize Gyroscope ##
+g_ref = read_g() #reference gyrsoscope reading (assuming parallel to a wall)
+g_readings = [] #list for gyroscope measurements 
+g_readings[0] = g_ref #first reading
 
 ## Determine whether left or right wall-following
 readings = read_us() #readings in format [Back, Left, Front, Right]
@@ -104,22 +137,44 @@ while LZ_L:
 
     #Check US Sensor Readings 
     readings = read_us() #readings in format [Back, Left, Front, Right]
-    print(readings)     
+    print(readings)
 
     if readings[2] > 10:
-       transmit('F')
+       move_forward()
+       g_readings[counter] = read_g()   # Store current counter reading
+       g_readings[counter] = Obstacle_Avoidance_Forward(g_ref, g_readings[counter]) #re-orient and correct current orientation if needed
 
     elif readings[3] > 10: 
-        transmit('R')
+        move_right_big()
         time.sleep(SLEEP_TIME)
-        transmit('R')
+        move_right_big()
 
     elif readings[1] > 10:
         transmit('L')
         time.sleep(SLEEP_TIME)
         transmit('L')
+
+while LZ_R: 
+    time.sleep(SLEEP_TIME) # delay to not overload with readings
+    counter += 1
+
+    #Check US Sensor Readings 
+    readings = read_us() #readings in format [Back, Left, Front, Right]
+    print(readings)     
+
+    if readings[2] > 10:
+       transmit('F')
+       g_readings[counter] = read_g()   # Store current counter reading
+       g_readings[counter] = Obstacle_Avoidance_Forward(g_ref, g_readings[counter]) #re-orient and correct current orientation if needed
     
-    elif readings[2] < 10 and readings[3] < 10 and readings [1] < 10:
-        LZ_L = False # Stop Loop
-        path_1 = print ('Rover is at bottom right portion of the map, use path_1 to loading zone.')
+    elif readings[1] > 10: 
+        transmit('L')
+        time.sleep(SLEEP_TIME)
+        transmit('L')
+
+    elif readings[3] > 10:
+        transmit('R')
+        time.sleep(SLEEP_TIME)
+        transmit('R')
+
     
