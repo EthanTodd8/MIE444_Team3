@@ -87,21 +87,23 @@ def stop():
     '''Function to stop rover motors from moving'''
     transmit('S')
 
+g_ref = read_g() #reference gyrsoscope reading (assuming parallel to a wall)
+
 def Obstacle_Avoidance_Forward(g_ref, g_current):
     #Check Difference In Reading
-    g_measured = g_current - g_ref
+    g_measured = g_current[0] - g_ref[0]
     
     #Check for 3 degrees difference between reference orientation and current reading
 
     while g_measured > 3: #If the distance is greater than 3 degrees, then the rover is too far to the right and needs to reorient left 
             move_left_small() # re-orient by small step to the left and re-calculate delta
             g_current = read_g()
-            g_measured = g_current - g_ref
+            g_measured = g_current[0] - g_ref[0]
 
-    while g_measured < 3: #If the distance is less than 3 degrees, then the rover is too far to the left and needs to reorient to the right
+    while g_measured < -3: #If the distance is less than 3 degrees, then the rover is too far to the left and needs to reorient to the right
             move_right_small() #re-orient by small step to the right and re-calculate delta
             g_current = read_g()
-            g_measured = g_current - g_ref
+            g_measured = g_current[0] - g_ref[0]
 
     return(g_current) # Returns corrected current orientation
 
@@ -113,7 +115,7 @@ counter = 0
 ## Inititalize Gyroscope ##
 g_ref = read_g() #reference gyrsoscope reading (assuming parallel to a wall)
 g_readings = [] #list for gyroscope measurements 
-g_readings[0] = g_ref #first reading
+g_readings.append(g_ref) #first reading
 
 ## Determine whether left or right wall-following
 readings = read_us() #readings in format [Back, Left, Front, Right]
@@ -139,17 +141,17 @@ while LZ_L:
     readings = read_us() #readings in format [Back, Left, Front, Right]
     print(readings)
 
-    if readings[2] > 10:
+    if readings[2] > 13:
        move_forward()
-       g_readings[counter] = read_g()   # Store current counter reading
+       g_readings.append(read_g ()) # Store current counter reading
        g_readings[counter] = Obstacle_Avoidance_Forward(g_ref, g_readings[counter]) #re-orient and correct current orientation if needed
 
-    elif readings[3] > 10: 
+    elif readings[3] > 13: 
         move_right_big()
         time.sleep(SLEEP_TIME)
         move_right_big()
 
-    elif readings[1] > 10:
+    elif readings[1] > 13:
         transmit('L')
         time.sleep(SLEEP_TIME)
         transmit('L')
@@ -164,8 +166,9 @@ while LZ_R:
 
     if readings[2] > 10:
        transmit('F')
-       g_readings[counter] = read_g()   # Store current counter reading
+       g_readings.append(read_g)   # Store current counter reading
        g_readings[counter] = Obstacle_Avoidance_Forward(g_ref, g_readings[counter]) #re-orient and correct current orientation if needed
+
     
     elif readings[1] > 10: 
         transmit('L')

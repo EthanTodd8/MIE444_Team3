@@ -35,7 +35,7 @@ void loop() {
 
     if (val == 'F') { // drive forward
       MoveForward();
-      delay(250);
+      delay(500);
       StopMotor();
       mySerial.println(val);
 
