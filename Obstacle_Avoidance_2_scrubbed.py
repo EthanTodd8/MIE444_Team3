@@ -3,7 +3,7 @@ import serial
 
 ### Serial Setup ###
 BAUDRATE = 9600         # Baudrate in bps
-PORT_SERIAL = 'COM7'    # COM port identification
+PORT_SERIAL = 'COM8'    # COM port identification
 TIMEOUT_SERIAL = 1      # Serial port timeout, in seconds
 
 ser = serial.Serial(PORT_SERIAL, BAUDRATE, timeout=TIMEOUT_SERIAL)

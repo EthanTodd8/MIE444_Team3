@@ -1,5 +1,5 @@
 #include <SoftwareSerial.h> // Software Serial for functions
-SoftwareSerial mySerial (3, 2); //RX | TX 
+SoftwareSerial mySerial (A4, A5); //RX | TX 
 
 // Connect motor controller pins to Arduino Digital Pins
 //Motor 1
@@ -51,23 +51,10 @@ void loop() {
       StopMotor();
       mySerial.println("right");
 
-<<<<<<< Updated upstream
-    } else if (val == 'r') { // drive right
+    } else if (val == 'r'){
       TurnRight();
       delay(100);
       StopMotor();
-      mySerial.println("right");
-=======
-    } else if (val == 'r'){
-      TurnRight();
-      delay(50);
-      StopMotor();
-
-    } else if (val =='l'){
-      TurnLeft();
-      delay(50);
-      StopMotor();
->>>>>>> Stashed changes
 
     } else if (val == 'L') { // drive left
       TurnLeft();

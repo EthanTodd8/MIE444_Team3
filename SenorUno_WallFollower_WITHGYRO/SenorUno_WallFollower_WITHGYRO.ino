@@ -52,7 +52,7 @@ NewPing sonar3(TRIG_PIN, ECHO_PIN_3, MAX_DISTANCE);
 NewPing sonar4(TRIG_PIN, ECHO_PIN_4, MAX_DISTANCE);
 
 SoftwareSerial BT(9, 10);
-SoftwareSerial mySerial(2, 3);  // RX | TX
+SoftwareSerial mySerial(A1, A0);  // RX | TX
 
 const int numSamples = 5;
 
@@ -85,7 +85,7 @@ void setup() {
   //while (!Serial); // wait for Leonardo enumeration, others continue immediately
   BT.begin(9600);
   mySerial.begin(9600);
-  //Serial.begin(9600);
+  Serial.begin(9600);
 
   mpu.initialize(); // initialize gyroscope device
 
@@ -195,10 +195,11 @@ void loop() {
       }
     }
   }
-
-  // if (mySerial.available()) {
-  //   //char received = mySerial.read();
-  //   Serial.print("Received from RoverUno: ");
-  //   Serial.println(received);
-  // }
+  /*
+    mySerial.listen();
+   if (mySerial.available()) {
+    char received = mySerial.read();
+    Serial.print("Received from RoverUno: ");
+    Serial.println(received);
+  }*/
 }
