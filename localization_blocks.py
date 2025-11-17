@@ -22,29 +22,46 @@ def sense_u(world, mask, p, SenVal, heading ):
     # Probabilities for sensor accuracy
     pHit = 0.9
     pMiss = 0.1
-    threshold = 15.54  # in cm (6 inches)
+    threshold = 7  # in cm ()
     
     #Claasify into zone type based on sensor value
     u0, u1, u2, u3, u4 = SenVal
     close = [u < threshold for u in [u0, u1, u2, u3]]
     close_count = sum(close)
 
-    steps = int((heading % 360) / 90)
-    rotated_close = np.roll(close, steps)
+    
+    # if close_count == 0:
+    #     sensor_zone = 0  # free
+    # elif close_count == 1:
+    #     sensor_zone = 1  #1 side blocked, 3 free
+    # elif ((close[0] and close[1]) or (close[0] and close[2]) or
+    #       (close[2] and close[3]) or (close[1] and close[3])):
+    #     sensor_zone = 2  # adjacent blocking
+    # elif (close[0] and close[3]) or (close[1] and close[2]):
+    #     sensor_zone = 5  # opposite blocking
+    # elif close_count == 3:
+    #     sensor_zone = 3  #3 blocked, 1 free
+    # else:
+    #     sensor_zone = 4  # obstacle (all sides blocked)
     
     if close_count == 0:
         sensor_zone = 0  # free
-    elif (close[0] and close[2]) or (close[1] and close[3]):
-        sensor_zone = 5  # opposite blocking
-    elif ((close[0] and close[1]) or (close[1] and close[2]) or
-          (close[2] and close[3]) or (close[3] and close[0])):
-        sensor_zone = 2  # adjacent blocking
     elif close_count == 1:
-        sensor_zone = 3  # single side blocking
+        sensor_zone = 1  #1 side blocked, 3 free
+    elif close_count == 2:
+        if ((close[0] and close[1]) or (close[0] and close[2]) or (close[2] and close[3]) or (close[1] and close[3])):
+            sensor_zone = 2  # adjacent blocking
+        elif (close[0] and close[3]) or (close[1] and close[2]):
+            sensor_zone = 5  # opposite blocking
+    elif close_count == 3:
+        sensor_zone = 3  #3 blocked, 1 free
     else:
-        sensor_zone = 1  # general blocking (catch‐all)
+        sensor_zone = 4  # obstacle (all sides blocked)
+    
+    print(f"Sensor Readings: {SenVal}, Close Count: {close_count} Classified as: {sensor_zone}") #Debug Mapping Test
 
-    # Define expected obstacle patterns per zone type (customize as needed)
+    # Define expected obstacle patterns per zone type 
+    
     expected = {
         0: np.array([0, 0, 0, 0]),  # free
         1: np.array([1, 0, 0, 0]),  # partial (e.g. wall behind)
@@ -56,12 +73,7 @@ def sense_u(world, mask, p, SenVal, heading ):
     
     # Create multiplier matrix
     mult = np.full_like(world, pMiss, dtype=float) #full like creates a new array with the same shape and type as a given array, filled with a specified value
-    #mult[world == sensor_zone] = pHit
-    for zone_val, pattern in expected.items():
-        dist = np.sum(np.abs(rotated_close - pattern))
-        # The smaller the distance, the higher the match weight
-        weight = pHit if dist == 0 else (0.5 if dist == 1 else pMiss)
-        mult[world == zone_val] = weight
+    mult[world == sensor_zone] = pHit
 
     # Apply sensor update
     pnew = p * mult
@@ -76,7 +88,6 @@ def sense_u(world, mask, p, SenVal, heading ):
     else:
         pnew = (mask != 4).astype(float)
         pnew = np.ones_like(pnew) / np.size(pnew)
-
     return pnew
 
 
@@ -114,37 +125,44 @@ def move(p, mask, heading, Move):
 
     print(f"heading: {heading}")
 
-    # --- DIRECTION HANDLING ---
-    if Move == 'L':
-        heading = (heading + 90) % 360
-    elif Move == 'R':
-        heading = (heading - 90) % 360
-    elif Move == 'B':
-        heading = (heading + 180) % 360
+    # # --- DIRECTION HANDLING ---
+    # if Move == 'L':
+    #     heading = (heading + 90) % 360
+        
+    # elif Move == 'R':
+    #     heading = (heading - 90) % 360
+        
+    # elif Move == 'B':
+    #     heading = (heading + 180) % 360
+        
     # 'F' means forward → no change to heading
     
-    rad = np.deg2rad(heading + 180)
-    col_step = int(np.round(np.cos(rad)))  # -1, 0, or 1
-    row_step = int(np.round(-np.sin(rad)))  # -1, 0, or 1
+    #rad = np.deg2rad((heading + 90) % 360)
+    rad = np.deg2rad(heading)
+    col_step = int(np.round(np.cos(rad)))  # +1 -> right, 0, or -1 -> left
+    row_step = int(np.round(np.sin(rad)))  # +1 -> down, 0, or -1 -> up
 
-    step_fraction = 1  # 5" / 12.5"
+    step_fraction = 0.4  # 5" / 12.5"
 
-    # Column shift
+    # Column shift (positive col_step = move right)
     if col_step == 1:
-        shifted = np.hstack([np.zeros((pnew.shape[0], 1)), pnew[:, :-1]])
-        pnew = (1 - step_fraction) * pnew + step_fraction * shifted
-    elif col_step == -1:
+        # move right: shift contents to the right
         shifted = np.hstack([pnew[:, 1:], np.zeros((pnew.shape[0], 1))])
         pnew = (1 - step_fraction) * pnew + step_fraction * shifted
-
-    # Row shift
-    if row_step == 1:
-        shifted = np.vstack([np.zeros((1, pnew.shape[1])), pnew[:-1, :]])
+    elif col_step == -1:
+        # move left: shift contents to the left
+        shifted = np.hstack([np.zeros((pnew.shape[0], 1)), pnew[:, :-1]])
         pnew = (1 - step_fraction) * pnew + step_fraction * shifted
-    elif row_step == - 1:
+
+    # Row shift (positive row_step = move down on screen)
+    if row_step == 1:
+        # move down: shift contents downward
         shifted = np.vstack([pnew[1:, :], np.zeros((1, pnew.shape[1]))])
         pnew = (1 - step_fraction) * pnew + step_fraction * shifted
-
+    elif row_step == -1:
+        # move up: shift contents upward
+        shifted = np.vstack([np.zeros((1, pnew.shape[1])), pnew[:-1, :]])
+        pnew = (1 - step_fraction) * pnew + step_fraction * shifted
 
     # # Determine movement direction
     # col_move = np.cos(np.deg2rad(heading))
@@ -175,6 +193,7 @@ def move(p, mask, heading, Move):
 
     # Apply mask
     #pnew = pnew * mask
+    
     pnew[mask ==4] = 0  # set probabilities to zero where mask indicates obstacle
 
     # Normalize
@@ -184,35 +203,18 @@ def move(p, mask, heading, Move):
     else:
         pnew = (mask != 4).astype(float)
         pnew = np.ones_like(pnew) / np.size(pnew)
-
+        
     print(f"move: {Move} heading: {heading}")
-
     return pnew, heading
-
-# # Test movement directions
-# p_test = np.zeros((16, 32))
-# p_test[8, 16] = 1  # start roughly in center
-# M_test = np.ones_like(p_test)
-# headings = [0, 90, 180, 270]
-
-# for h in headings:
-#     p_move, _ = move(p_test, M_test, h, 'F')
-#     plt.imshow(p_move, cmap='hot', origin='upper')
-#     plt.title(f"Heading {h}° (should move: 0°=Right, 90°=Down, 180°=Left, 270°=Up)")
-#     plt.pause(1)
-# plt.show()
 
 
 # --- INITIAL SETUP ---
-
 # Heading (degrees) //get from gyroscope
-heading = 180 # 270° implies downward, 90 is up, 0 is left, 180 is right
+heading = 270 # 270° is down, 90 is up, 0 is left, 180 is right
 
 # Provide measurements and movements 
-m_u = [7.55904, 69.39280000000001, 37.932359999999996, 123.62180000000001, 7.574280000000001, 7.05358, 70.45706, 41.32326, 124.11710000000001, 137.09395999999998, 8.382, 22.85492, 16.3703, 15.23238, 23.15464, 67.61226, 127.35813999999999, 8.884920000000001, 38.41496, 33.99028, 65.76822, 108.88726, 9.05002, 46.149260000000005, 48.07458, 56.91378, 23.599140000000002, 8.56488, 52.85994, 52.35194, 51.0413, 7.8740000000000006, 9.33958, 57.69356, 59.895739999999996, 42.33164, 9.37768, 8.371839999999999, 68.86956, 71.33590000000001, 36.12642, 8.67664, 8.93064, 79.375, 77.89672, 24.940260000000002, 8.387080000000001, 8.9535, 87.36584, 87.60968, 21.912580000000002, 8.4836, 9.02208, 90.84818000000001, 90.23604, 12.682220000000001, 9.3472, 8.82142, 99.95154, 99.5426, 7.19836, 8.74522, 8.945879999999999, 96.24822, 100.28936, 7.7343, 9.232899999999999, 9.51738, 98.75774, 102.26801999999999, 7.45744, 8.66394, 8.79348, 98.53675999999999, 109.74578, 7.442200000000001, 8.26008, 8.95096, 96.82988, 103.13924, 7.6936599999999995, 9.24814, 9.07034, 102.49662000000001, 95.3643, 6.94436, 9.21512, 9.19988, 101.96830000000001, 104.21366, 7.37616, 9.09066, 8.79348, 102.27564, 100.27919999999999]
-m_m = ['R', 'R', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F']
-
-# Initialization of the world
+m_u = [40.082, 3.328, 3.613, 3.458, 39.721, 40.997, 3.865, 3.572, 3.728, 36.026, 39.97, 3.693, 3.657, 5.777, 37.363, 36.086, 3.481, 3.64, 8.16, 35.506, 34.072, 3.579, 7.998, 11.391, 29.455, 29.352, 26.968, 25.194, 12.599, 25.964, 29.824, 27.378, 28.757, 15.232, 26.316, 22.913, 27.687, 27.794, 17.659, 23.572, 24.357, 15.372, 10.353, 21.746, 20.239, 20.014, 3.435, 3.53, 23.628, 18.917, 18.368, 3.683, 3.689, 26.643, 15.01, 14.175, 3.62, 3.369, 29.666, 14.824, 13.926, 3.336, 3.534, 31.817, 10.629, 9.484, 3.277, 3.425, 34.813, 9.691, 8.719, 11.058, 3.587, 37.208, 6.171, 4.846, 46.238, 3.662, 39.485, 3.876, 4.027, 7.412, 4.645, 5.212, 9.387, 35.007, 39.114, 4.269, 3.611, 46.725, 42.998, 37.814, 4.25, 6.197, 44.543, 52.472, 9.292, 4.3, 8.673, 46.03, 43.958, 2.619, 4.568, 11.135, 55.468, 49.311, 2.502, 4.534, 14.775, 51.808, 53.558, 2.23, 4.621, 16.197, 50.913, 50.507, 2.42, 4.479, 18.782, 50.251, 50.102, 2.332, 4.709, 20.881, 43.001, 45.758, 2.344, 4.533, 23.148, 41.026, 41.403, 2.489, 4.57, 24.555, 40.664, 37.644, 2.434, 4.064, 28.716, 38.072, 39.656, 2.457, 4.488, 29.586, 33.893, 35.644, 2.549, 4.234, 32.744, 31.51, 31.833, 10.888, 4.586, 37.762, 33.162, 28.25, 15.475, 4.287, 37.477, 29.418, 27.968, 14.271, 4.63, 42.232, 25.914, 23.67, 14.849, 4.466, 41.782, 22.528]
+m_m = ['F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F']# Initialization of the world
 dim1, dim2 = 32, 16   # world dimensions (must match ultra)
 locationindex = np.arange(1, dim1 * dim2 + 1).reshape(dim2, dim1)
 n = locationindex.size
@@ -221,7 +223,7 @@ zones_x, zones_y = dim1 // 4, dim2 // 4  # number of 4×4 blocks
 # Define what each zone actually is (the “ground truth”)
 zone_layout = np.array([
     [2,1,5,2,4,3,4,3],
-    [1,2,4,1,2,0,5,1],
+    [1,2,4,2,5,0,5,1],
     [5,4,3,4,4,5,4,5],
     [2,5,1,5,5,2,4,3]
 ])
@@ -244,10 +246,6 @@ for r in range(zones_y):
         block = zone_patterns[ztype]
         world[r*4:(r+1)*4, c*4:(c+1)*4] = block
 
-# Add a wall border (4s)
-#world = np.pad(world, pad_width=1, mode='constant', constant_values=4)
-
-
 # --- VISUALIZE MAP ---
 plt.figure(figsize=(10, 5))
 #cmap = plt.cm.gray.copy()
@@ -257,7 +255,6 @@ Mask_array = np.ma.masked_where(world == 4, world)
 #MASK
 M = np.ones_like(world, dtype=int)  # 1 = free
 M[world == 4] = 4                   # 4 = obstacle
-
 
 plt.imshow(world, cmap= 'gray', origin='upper', vmin=0, vmax=5)
 plt.title("Ground Truth World Map")
@@ -270,103 +267,8 @@ for i in range(world.shape[0]):
 
 plt.show()
 
-
-#plt.title("Ultrasonic World Map (0–5 zones, 4 = Obstacle)")
-#plt.axis('off')
-#plt.show()
-
-# --- GENERATE ULTRASONIC WORLD ---
-m_u_arr = np.array(m_u)
-usable_length = (m_u_arr.size // 5) * 5
-m_u_arr = m_u_arr[:usable_length]
-
-# number of 4x4 zones
-zones_x = dim1 // 4  # 8
-zones_y = dim2 // 4  # 4
-num_zones = zones_x * zones_y
-
-# Sensor data for each block
-sensor_data = m_u_arr.reshape(-1, 5)
-
-# Threshold for classifying ultrasonic readings (adjust as needed)
-threshold = 15.54  # in cm (6 inches)
-
-# Correct ultra array shape (rows=dim2, cols=dim1)
-ultra = np.zeros((dim2, dim1), dtype=int)
-
-print(f"Total zones: {num_zones}, Sensor data sets: {sensor_data.shape[0]}")
-
-for i in range(min(sensor_data.shape[0], num_zones)):
-    u2, u3, u0, u1, u4 = sensor_data[i]
-    close = [u < threshold for u in [u0, u1, u2, u3]]
-    close_count = sum(close)
-
-    # --- PRIORITY ORDER ---
-    if close_count == 0:
-        val = 0  # free
-    elif (close[0] and close[2]) or (close[1] and close[3]):
-        val = 5  # opposite blocking
-    elif ((close[0] and close[1]) or (close[1] and close[2]) or
-          (close[2] and close[3]) or (close[3] and close[0])):
-        val = 2  # adjacent blocking
-    elif close_count == 1:
-        val = 3  # 3 blocking
-    else:
-        val = 1  # one side blocked
-
-    # --- DEBUG PRINT ---
-    if i < 8:  # print first few classifications
-        print(f"Zone {i}: close={close}, close_count={close_count}, val={val}")
-
-    # --- Fill 4×4 region ---
-    zone_row = (i // zones_x) * 4
-    zone_col = (i % zones_x) * 4
-    ultra[zone_row:zone_row+4, zone_col:zone_col+4] = val
-
-print("Unique values BEFORE padding:", np.unique(ultra))
-
-# --- PAD WALLS (add 4-border) ---
-# We only want to pad around the outside — not overwrite existing data.
-# Your map currently has values in [2,3,5]; we’ll keep them and just add walls.
-
-#ultra_padded = np.pad(ultra, pad_width=1, mode='constant', constant_values=4)
-
-#print("Unique values AFTER padding:", np.unique(ultra_padded))
-
-# --- MASK WALLS FOR VISUALIZATION ---
-# Mask all cells equal to 4 (walls)
-#masked_ultra = np.ma.masked_where(ultra_padded == 4, ultra_padded)
-
-# --- VISUALIZATION ---
-#plt.figure(figsize=(10, 5))
-
-# Use a copy-safe colormap
-# cmap = mpl.cm.get_cmap('gray').copy()
-# cmap.set_bad(color='black')  # walls = black
-
-# plt.imshow(masked_ultra, cmap=cmap, origin='upper', vmin=0, vmax=5)
-# plt.title("Sensor Generated Ultrasonic Map")
-# plt.axis('off')
-
-# mask_bool = np.ma.getmaskarray(masked_ultra)
-# for r in range(masked_ultra.shape[0]):
-#     for c in range(masked_ultra.shape[1]):
-#         if not mask_bool[r, c]:
-#             v = int(masked_ultra[r, c])
-#             txt_color = 'white' if v >= 3 else 'black'
-#             plt.text(c, r, f"{v}", ha='center', va='center', fontsize=6, color=txt_color)
-
-#plt.show()
-
-# Replace ultra with the padded version for later use
-# ultra = ultra_padded.copy()
-
 # --- INITIALIZE PROBABILITY ---
 p = np.ones((dim2, dim1)) * (1 / n)
-
-step_size_in_inches = 5
-zone_size_in_inches = 12.5  # each 4×4 region is 12.5" square
-steps_per_zone = int(zone_size_in_inches / step_size_in_inches)  # ~2-3 readings per zone
 
 # --- LOCALIZATION LOOP ---
 for k in range(len(m_m)):
@@ -374,6 +276,16 @@ for k in range(len(m_m)):
         current_readings = m_u[k*5 : k*5 + 5]
     else:
         break  # stop if we run out of data p = sense_u(world, M, p, current_readings)
+    
+    command = m_m[k]
+    if command == 'L':
+        heading = (heading + 90) % 360
+        continue
+    
+    elif command == 'R':
+        heading = (heading - 90) % 360
+        continue
+    
     # Sensor update
     p = sense_u(world, M, p, current_readings, heading)  
 
