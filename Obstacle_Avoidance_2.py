@@ -3,7 +3,7 @@ import serial
 
 ### Serial Setup ###
 BAUDRATE = 9600         # Baudrate in bps
-PORT_SERIAL = 'COM7'    # COM port identification
+PORT_SERIAL = 'COM8'    # COM port identification
 TIMEOUT_SERIAL = 1      # Serial port timeout, in seconds
 
 ser = serial.Serial(PORT_SERIAL, BAUDRATE, timeout=TIMEOUT_SERIAL)
@@ -95,7 +95,7 @@ def Obstacle_Avoidance_Forward(g_ref, g_current):
     
     #Check for 3 degrees difference between reference orientation and current reading
 
-    while g_measured > 3: #If the distance is greater than 3 degrees, then the rover is too far to the right and needs to reorient left 
+    while g_measured > 3: #If the distance is greater than 3 degrees, then the rover is too far to the right and needs to reorient left
             move_left_small() # re-orient by small step to the left and re-calculate delta
             g_current = read_g()
             g_measured = g_current[0] - g_ref[0]
@@ -110,7 +110,7 @@ def Obstacle_Avoidance_Forward(g_ref, g_current):
 def Obstacle_Avoidance_Right(g_ref_old, g_current):
 
     g_ref = []
-    g_ref.append(g_ref_old + 90) #add 90 degrees to original reference orientation to get new orientation
+    g_ref.append(g_ref_old[0] + 90) #add 90 degrees to original reference orientation to get new orientation
     
     #Check Difference In Reading
     g_measured = g_current[0] - g_ref[0]
@@ -132,8 +132,7 @@ def Obstacle_Avoidance_Right(g_ref_old, g_current):
 def Obstacle_Avoidance_Left(g_ref_old, g_current):
 
     g_ref = []
-    g_ref.append(g_ref_old - 90) #subtract 90 degrees to original reference orientation to get new orientation
-    
+    g_ref.append(g_ref_old[0] - 90) #subtract 90 degrees to original reference orientation to get new orientation 
     #Check Difference In Reading
     g_measured = g_current[0] - g_ref[0]
 
@@ -187,8 +186,10 @@ while LZ_L:
     if readings[2] > 13:
        move_forward()
        g = read_g()
+       print(g)
        g_readings.append(g) # Store current counter reading
        g_new = Obstacle_Avoidance_Forward(g_ref, g_readings[counter]) #re-orient and correct current orientation if needed
+       print("oriented")
        g_readings[counter] = g_new #Update current gyroscope position
 
 
@@ -200,6 +201,7 @@ while LZ_L:
         g = read_g()
         g_readings.append(g) #Store current counter reading
         g_new, g_ref_new = Obstacle_Avoidance_Right(g_ref, g_readings[counter]) #re-orient and correct current position
+        p
         g_readings[counter] = g_new #Update current gyroscope position
 
     elif readings[1] > 13:

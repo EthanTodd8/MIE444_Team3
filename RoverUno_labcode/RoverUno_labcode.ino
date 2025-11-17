@@ -51,9 +51,21 @@ void loop() {
       StopMotor();
       mySerial.println("right");
 
+    } else if (val == 'r') { // drive right
+      TurnRight();
+      delay(100);
+      StopMotor();
+      mySerial.println("right");
+
     } else if (val == 'L') { // drive left
       TurnLeft();
       delay(725);
+      StopMotor();
+      mySerial.println("left");
+
+    } else if (val == 'l') { // drive left
+      TurnLeft();
+      delay(100);
       StopMotor();
       mySerial.println("left");
 

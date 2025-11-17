@@ -55,6 +55,8 @@ def read_g():
             case = False
             for i in range(len((values_str))-1):
                 values.append(float(values_str[i]))
+            if values[0] == 0.0 or values[0] == 180.0:
+                read_g()  #recursively call read_g if the reading is 0 or 180 degrees (erroneous)
             return values
         case = True
 
@@ -110,7 +112,7 @@ def Obstacle_Avoidance_Forward(g_ref, g_current):
 def Obstacle_Avoidance_Right(g_ref_old, g_current):
 
     g_ref = []
-    g_ref.append(g_ref_old + 90) #add 90 degrees to original reference orientation to get new orientation
+    g_ref.append(g_ref_old[0] + 90) #add 90 degrees to original reference orientation to get new orientation
     
     #Check Difference In Reading
     g_measured = g_current[0] - g_ref[0]
@@ -132,7 +134,7 @@ def Obstacle_Avoidance_Right(g_ref_old, g_current):
 def Obstacle_Avoidance_Left(g_ref_old, g_current):
 
     g_ref = []
-    g_ref.append(g_ref_old - 90) #subtract 90 degrees to original reference orientation to get new orientation
+    g_ref.append(g_ref_old[0] - 90) #subtract 90 degrees to original reference orientation to get new orientation
     
     #Check Difference In Reading
     g_measured = g_current[0] - g_ref[0]
@@ -152,7 +154,7 @@ def Obstacle_Avoidance_Left(g_ref_old, g_current):
     return(g_current, g_ref)
 
 ## Time & Counter Set-Up
-SLEEP_TIME = 0.001
+SLEEP_TIME = 0.03
 counter = 0
 
 ## Inititalize Gyroscope ##
@@ -174,6 +176,8 @@ else:
     LZ_L = False
     print(LZ_R, LZ_L)
 
+LZ_L = True
+LZ_R = False   
 ### Previous logic sequence with small steps, run this if the rover has a move forward function that stops after a time delay ###
 
 while LZ_L: 
@@ -186,32 +190,73 @@ while LZ_L:
 
     if readings[2] > 13:
        move_forward()
-       #g = read_g()
-       g_readings.append(read_g()) # Store current counter reading
-       g_readings[counter] = Obstacle_Avoidance_Forward(g_ref, g_readings[counter]) #re-orient and correct current orientation if needed
-       #g_readings[counter] = g_new #Update current gyroscope position
-
+       g = read_g()
+       print(g)
+       #g_readings.append(read_g()) # Store current counter reading
+       #g_readings[counter] = Obstacle_Avoidance_Forward(g_ref, g_readings[counter]) #re-orient and correct current orientation if needed
+       #g_new = g_readings[counter] #Update current gyroscope position
 
     elif readings[3] > 13: 
+        g1 = read_g()
+        print(g1)
         move_right_big()
         time.sleep(SLEEP_TIME)
         move_right_big()
-
-        g = read_g()
-        g_readings.append(g) #Store current counter reading
-        g_new, g_ref_new = Obstacle_Avoidance_Right(g_ref, g_readings[counter]) #re-orient and correct current position
-        g_readings[counter] = g_new #Update current gyroscope position
-
+        time.sleep(SLEEP_TIME)
+        time.sleep(5)
+        g2 = read_g()
+        g2 = read_g()
+        print(g2)
+        while (g2[0] - g1[0]) < 85:  #If the turn was not a full 90 degree turn, do another small right turn
+            print("adjusting right")
+            move_right_small()
+            time.sleep(SLEEP_TIME)
+            time.sleep(1)
+            g2 = read_g()
+            print(g2)
+        while (g2[0] - g1[0]) > 95:  #If the turn was more than 90 degrees, do a small left correction
+            print("adjusting left") 
+            move_left_small()
+            time.sleep(SLEEP_TIME)
+            time.sleep(1)
+            g2 = read_g()
+            print(g2)
+            
+        #g = read_g()
+        #g_readings.append(g) #Store current counter reading
+        #g_new, g_ref_new = Obstacle_Avoidance_Right(g_ref, g_readings[counter]) #re-orient and correct current position
+        #g_readings[counter] = g_new #Update current gyroscope position
     elif readings[1] > 13:
-        transmit('L')
+        g1 = read_g()
+        print(g1)
+        move_left_big()
         time.sleep(SLEEP_TIME)
-        transmit('L')
-
-        g = read_g()
-        g_readings.append(g) #Store current counter reading
-        g_new, g_ref_new = Obstacle_Avoidance_Left(g_ref, g_readings[counter]) #re-orient and correct current position
-        g_readings[counter] = g_new #Update current gyroscope position 
-        g_ref = g_ref_new #Update g_ref 
+        move_left_big()
+        time.sleep(5)
+        g2 = read_g()
+        g2 = read_g()
+        print(g2)
+        while g2[0] - g[0] > -85: #if the turn was not a full 90 degrees, do another small turn
+            print('adjusting left')
+            move_left_small()
+            time.sleep(SLEEP_TIME)
+            time.sleep(1)
+            g2 = read_g()
+            print(g2)     
+                  
+        while (g2[0] - g1[0]) < -95:  #If the turn was more than 90 degrees, do a small right correction
+            print("adjusting right") 
+            move_right_small()
+            time.sleep(SLEEP_TIME)
+            time.sleep(1)
+            g2 = read_g()
+            print(g2)
+            
+        #g = read_g()
+        #g_readings.append(g) #Store current counter reading
+        #g_new, g_ref_new = Obstacle_Avoidance_Left(g_ref, g_readings[counter]) #re-orient and correct current position
+        #g_readings[counter] = g_new #Update current gyroscope position 
+        #g_ref = g_ref_new #Update g_ref 
 
 while LZ_R: 
     time.sleep(SLEEP_TIME) # delay to not overload with readings
