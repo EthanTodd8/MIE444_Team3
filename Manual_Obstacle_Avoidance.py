@@ -62,7 +62,11 @@ def read_g():
         if line:
             # Split using ',' as the delimiter
             values_str = line.split(',') # List to store gyroscope readings
+<<<<<<< Updated upstream
             #print(values_str)
+=======
+            print(values_str)
+>>>>>>> Stashed changes
             case = False
             for i in range(len((values_str))-1):
                 values.append(float(values_str[i]))
