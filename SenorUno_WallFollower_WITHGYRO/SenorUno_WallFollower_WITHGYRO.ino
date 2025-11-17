@@ -28,9 +28,6 @@ VectorFloat gravity;    // [x, y, z]            gravity vector
 float euler[3];         // [psi, theta, phi]    Euler angle container
 float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gravity vector
 
-// packet structure for InvenSense teapot demo
-uint8_t teapotPacket[14] = { '$', 0x02, 0,0, 0,0, 0,0, 0,0, 0x00, 0x00, '\r', '\n' };
-
 // INTERRUPT DETECTION ROUTINE
 volatile bool mpuInterrupt = false;     // indicates whether MPU interrupt pin has gone high
 void dmpDataReady() {
@@ -55,11 +52,11 @@ NewPing sonar3(TRIG_PIN, ECHO_PIN_3, MAX_DISTANCE);
 NewPing sonar4(TRIG_PIN, ECHO_PIN_4, MAX_DISTANCE);
 
 SoftwareSerial BT(9, 10);
-SoftwareSerial mySerial(2, 3);  // RX | TX
+SoftwareSerial mySerial(A1, A0);  // RX | TX
 
 const int numSamples = 5;
 
-char rover_cmd_array[] = { 'F', 'B', 'L', 'R', 'S' };
+char rover_cmd_array[] = { 'F', 'B', 'L', 'R', 'S', 'l', 'r' };
 
 // Helper function: Get the average ping for one sonar
 unsigned long getAveragePing(NewPing &sonar) {
@@ -88,6 +85,7 @@ void setup() {
   //while (!Serial); // wait for Leonardo enumeration, others continue immediately
   BT.begin(9600);
   mySerial.begin(9600);
+  Serial.begin(9600);
 
   mpu.initialize(); // initialize gyroscope device
 
@@ -102,7 +100,6 @@ void setup() {
   // make sure it worked (returns 0 if so)
   if (devStatus == 0) {
     mpu.setDMPEnabled(true); // turn DMP on
-    attachInterrupt(0, dmpDataReady, RISING); // enable Arduino interrupt detection
     mpuIntStatus = mpu.getIntStatus();
     dmpReady = true; // set our DMP Ready flag so the main loop() function knows it's okay to use it
     packetSize = mpu.dmpGetFIFOPacketSize(); // get expected DMP packet size for later comparison
@@ -120,9 +117,6 @@ void loop() {
     //Serial.println(ch);
 
     if (ch == 'u') {
-
-      // Read IR
-      //int irValue = analogRead(irPin);
 
       // Compute averages (in micro sec)
       unsigned long avg0 = getAveragePing(sonar0);
@@ -156,7 +150,6 @@ void loop() {
 
     // GYROSCOPE
     else if (ch == 'g') {
-      //if (!dmpReady) return; // if programming failed, don't try to do anything
 
       //mpuInterrupt = false; // reset interrupt flag and get INT_STATUS byte
       mpuIntStatus = mpu.getIntStatus();
@@ -164,15 +157,16 @@ void loop() {
       fifoCount = mpu.getFIFOCount(); // get current FIFO count
 
       // if overflow, reset it
-      if ((mpuIntStatus & 0x10) || fifoCount == 1024) {
-        mpu.resetFIFO(); 
+      //if ((mpuIntStatus & 0x10) || fifoCount == 1024) {
+      mpu.resetFIFO(); //reset fifo buffer
         //Serial.println(F("FIFO overflow!"));
 
       // otherwise, check for DMP data ready interrupt (this should happen frequently)
-      }  
+      //}  
       while (!(mpu.getIntStatus() & 0x02));
         // wait for correct available data length, should be a VERY short wait
-        while (fifoCount < packetSize) fifoCount = mpu.getFIFOCount();
+      while (fifoCount < packetSize) fifoCount = mpu.getFIFOCount();
+
 
         // read a packet from FIFO
         mpu.getFIFOBytes(fifoBuffer, packetSize);
@@ -184,7 +178,7 @@ void loop() {
         #ifdef OUTPUT_READABLE_EULER
           mpu.dmpGetQuaternion(&q, fifoBuffer);
           mpu.dmpGetEuler(euler, &q);
-          BT.print(euler[0] * 180/M_PI); BT.print(",");
+          BT.print(euler[0] * 180/M_PI); BT.print(","); BT.println(".");
         #endif
     }
 
@@ -201,10 +195,11 @@ void loop() {
       }
     }
   }
-
-  // if (mySerial.available()) {
-  //   //char received = mySerial.read();
-  //   Serial.print("Received from RoverUno: ");
-  //   Serial.println(received);
-  // }
+  /*
+    mySerial.listen();
+   if (mySerial.available()) {
+    char received = mySerial.read();
+    Serial.print("Received from RoverUno: ");
+    Serial.println(received);
+  }*/
 }
