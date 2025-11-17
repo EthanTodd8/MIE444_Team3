@@ -107,6 +107,49 @@ def Obstacle_Avoidance_Forward(g_ref, g_current):
 
     return(g_current) # Returns corrected current orientation
 
+def Obstacle_Avoidance_Right(g_ref_old, g_current):
+
+    g_ref = []
+    g_ref.append(g_ref_old + 90) #add 90 degrees to original reference orientation to get new orientation
+    
+    #Check Difference In Reading
+    g_measured = g_current[0] - g_ref[0]
+
+    #Check for 3 degrees difference between reference orientation and current reading
+
+    while g_measured > 3: #If the distance is > 3 degrees, then the rover is too far to the right and needs to reorient left
+        move_left_small() #re-orient by small step to the left and re-calculate delta
+        g_current = read_g()
+        g_measured = g_current[0] - g_ref[0]
+    
+    while g_measured < -3: #If the distance is < -3 degrees, then the rover is too far to the left and needs to reorient right
+        move_right_small() #re-orient by small step to the right and re-calculate delta
+        g_current = read_g()
+        g_measured = g_current[0] - g_ref[0]
+
+    return(g_current, g_ref)
+
+def Obstacle_Avoidance_Left(g_ref_old, g_current):
+
+    g_ref = []
+    g_ref.append(g_ref_old - 90) #subtract 90 degrees to original reference orientation to get new orientation
+    
+    #Check Difference In Reading
+    g_measured = g_current[0] - g_ref[0]
+
+    #Check for 3 degrees difference between reference orientation and current reading
+
+    while g_measured > 3: #If the distance is > 3 degrees, then the rover is too far to the right and needs to reorient left
+        move_left_small() #re-orient by small step to the left and re-calculate delta
+        g_current = read_g()
+        g_measured = g_current[0] - g_ref[0]
+    
+    while g_measured < -3: #If the distance is < -3 degrees, then the rover is too far to the left and needs to reorient right
+        move_right_small() #re-orient by small step to the right and re-calculate delta
+        g_current = read_g()
+        g_measured = g_current[0] - g_ref[0]
+
+    return(g_current, g_ref)
 
 ## Time & Counter Set-Up
 SLEEP_TIME = 0.001
@@ -143,18 +186,32 @@ while LZ_L:
 
     if readings[2] > 13:
        move_forward()
-       g_readings.append(read_g ()) # Store current counter reading
-       g_readings[counter] = Obstacle_Avoidance_Forward(g_ref, g_readings[counter]) #re-orient and correct current orientation if needed
+       g = read_g()
+       g_readings.append(g) # Store current counter reading
+       g_new = Obstacle_Avoidance_Forward(g_ref, g_readings[counter]) #re-orient and correct current orientation if needed
+       g_readings[counter] = g_new #Update current gyroscope position
+
 
     elif readings[3] > 13: 
         move_right_big()
         time.sleep(SLEEP_TIME)
         move_right_big()
 
+        g = read_g()
+        g_readings.append(g) #Store current counter reading
+        g_new, g_ref_new = Obstacle_Avoidance_Right(g_ref, g_readings[counter]) #re-orient and correct current position
+        g_readings[counter] = g_new #Update current gyroscope position
+
     elif readings[1] > 13:
         transmit('L')
         time.sleep(SLEEP_TIME)
         transmit('L')
+
+        g = read_g()
+        g_readings.append(g) #Store current counter reading
+        g_new, g_ref_new = Obstacle_Avoidance_Left(g_ref, g_readings[counter]) #re-orient and correct current position
+        g_readings[counter] = g_new #Update current gyroscope position 
+        g_ref = g_ref_new #Update g_ref 
 
 while LZ_R: 
     time.sleep(SLEEP_TIME) # delay to not overload with readings
@@ -166,18 +223,30 @@ while LZ_R:
 
     if readings[2] > 10:
        transmit('F')
-       g_readings.append(read_g)   # Store current counter reading
-       g_readings[counter] = Obstacle_Avoidance_Forward(g_ref, g_readings[counter]) #re-orient and correct current orientation if needed
 
+       g = read_g()
+       g_readings.append(g) # Store current counter reading
+       g_new = Obstacle_Avoidance_Forward(g_ref, g_readings[counter]) #re-orient and correct current orientation if needed
+       g_readings[counter] = g_new #Update current gyroscope position      
     
     elif readings[1] > 10: 
         transmit('L')
         time.sleep(SLEEP_TIME)
         transmit('L')
 
+        g = read_g()
+        g_readings.append(g) #Store current counter reading
+        g_new , g_ref_new = Obstacle_Avoidance_Left(g_ref, g_readings[counter]) #re-orient and correct current position
+        g_readings[counter] = g_new #Update current gyroscope position 
+        g_ref = g_ref_new #Update g_ref 
+
     elif readings[3] > 10:
         transmit('R')
         time.sleep(SLEEP_TIME)
         transmit('R')
 
-    
+        g = read_g()
+        g_readings.append(g) #Store current counter reading
+        g_new , g_ref_new = Obstacle_Avoidance_Right(g_ref, g_readings[counter]) #re-orient and correct current position
+        g_readings[counter] = g_new #Update current gyroscope position
+        g_ref = g_ref_new #Update g_ref 
