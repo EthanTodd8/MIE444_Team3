@@ -392,7 +392,7 @@ if AUTOMATIC:
         print(CMD_LIST)
         
         if  sensor_front[counter] > 5:
-            packet_tx = packetize('w0:1')
+            packet_tx = packetize('w0:4')
             CMD_LIST.append('F')
             if packet_tx:
                 transmit(packet_tx)
@@ -411,6 +411,8 @@ if AUTOMATIC:
             if packet_tx:
                 transmit(packet_tx)
                 [responses, time_rx] = receive()
+                
+        
 
     while LZ_R: 
         counter += 1 # Add 1 to counter for array indexing
@@ -456,7 +458,7 @@ if AUTOMATIC:
         print(CMD_LIST)
 
         if  sensor_front[counter] > 5:
-            packet_tx = packetize('w0:1')
+            packet_tx = packetize('w0:4')
             CMD_LIST.append('F')
             if packet_tx:
                 transmit(packet_tx)
@@ -475,6 +477,8 @@ if AUTOMATIC:
             if packet_tx:
                 transmit(packet_tx)
                 [responses, time_rx] = receive()
+                
+        
 
 
 ############## Main section for the manual wall follower algorithim ##############
@@ -531,6 +535,8 @@ while MANUAL:
 
         front_string = f"......{sensor_front}......\n..{sensor_left}..{sensor_right}..\n..........."
         print(front_string)
+        
+        
 
 
 
