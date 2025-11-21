@@ -63,6 +63,8 @@ def read_g(offset):
                 values = [values[0] - offset + 360]
             elif values[0] - offset > 360: # this might not be needed since offset vals are always positive
                 values = [values[0] - offset - 360]
+            else:
+                values = [values[0] - offset]
             return values
         case = True
 
@@ -107,26 +109,30 @@ def stop():
 
 # Method: 1) Take diff, 2) Decide what needs to happen, 3) Adjust, 4) Check again and repeat
 def Slight_Straighten(intended_orientation, g_current): 
-    print("Re-aligning...")
+    print("Re-aligning current angle ", g_current, " to ", intended_orientation)
     g_adjusted = [] 
     g_diff = g_current - intended_orientation
     
-    while abs(g_diff) > 3:
+    while abs(g_diff) > 5:
         # Adjust to be in range-- considered too far left or right up until 180 deg on either direction
         if g_diff > 0:
             if g_diff < 180: # Too far right
                 move_left_small()
+                print("Adjusting left")
             elif g_diff > 180: # Too far left
                 g_diff = abs(g_diff - 360)
                 move_right_small()
+                print("Adjusting right")
                 
         elif g_diff < 0: 
             if g_diff > -180: # Too far left
                 g_diff = abs(g_diff)
                 move_right_small()
+                print("Adjusting right")
             elif g_diff < -180: # Too far right
                 g_diff += 360  
                 move_left_small()
+                print("Adjusting left")
           
         time.sleep(0.01) # Let movement finish before taking new g reading
         g_adjusted = read_g(g_offset)
@@ -210,11 +216,13 @@ SLEEP_TIME = 0.03
 counter = 0
 
 ## Inititalize Gyroscope
+print("Initializing gyroscope...")
 read_g(0) # Give gyroscope 15s to stabilize
-time.sleep(15) 
+time.sleep(20) 
 g = read_g(0)
 g_offset = g[0] # A constant used to zero out initial position
 intended_g = 0 # A changeable constant used to set the way KISI is meant to face; 0, 90, 180, or 270. Starts at "NORTH"
+print("Offset: ", g_offset)
 print("Gyroscope zeroed successfully.")
 
 readings = read_us() # readings in format [Back, Left, Front, Right, BlockSensor]
@@ -262,7 +270,7 @@ while OPERATION_LOCALIZE == True:
             g = read_g(g_offset) # Check alignment
             print("Current angle: ", g[0])
             
-            if abs(g[0] - intended_g) > 3: # Straighten as needed
+            if abs(g[0] - intended_g) > 5: # Straighten as needed
                 Slight_Straighten(intended_g, g[0])
             
             
@@ -284,7 +292,7 @@ while OPERATION_LOCALIZE == True:
             g = read_g(g_offset)
             print("Current angle: ", g[0])
             
-            if abs(g[0] - intended_g) > 3: # Straighten as needed
+            if abs(g[0] - intended_g) > 5: # Straighten as needed
                 Slight_Straighten(intended_g, g[0])
             
         
@@ -306,7 +314,7 @@ while OPERATION_LOCALIZE == True:
             g = read_g(g_offset)
             print("Current angle: ", g[0])
             
-            if abs(g[0] - intended_g) > 3: # Straighten as needed
+            if abs(g[0] - intended_g) > 5: # Straighten as needed
                 Slight_Straighten(intended_g, g[0])
                 
         else: 
