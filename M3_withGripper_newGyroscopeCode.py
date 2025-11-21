@@ -108,7 +108,7 @@ def stop():
 
 
 # Method: 1) Take diff, 2) Decide what needs to happen, 3) Adjust, 4) Check again and repeat
-def Slight_Straighten(intended_orientation, g_current): 
+def Slight_Straighten(g_current, intended_orientation): 
     print("Re-aligning current angle ", g_current, " to ", intended_orientation)
     g_adjusted = [] 
     g_diff = g_current - intended_orientation
@@ -137,7 +137,7 @@ def Slight_Straighten(intended_orientation, g_current):
                 move_left_small()
                 print("Adjusting left")
                 
-        time.sleep(0.01) # Let movement finish before taking new g reading
+        time.sleep(0.5) # Let movement finish before taking new g reading
         g_adjusted = read_g(g_offset)
         new_g_diff = g_adjusted[0] - intended_orientation # Check new difference
         
@@ -285,7 +285,7 @@ while OPERATION_LOCALIZE == True:
             print("Current angle: ", g[0])
             
             if abs(g[0] - intended_g) > 5: # Straighten as needed
-                Slight_Straighten(intended_g, g[0])
+                Slight_Straighten(g[0], intended_g)
             
             
         # Turn right if space on right side
@@ -307,7 +307,7 @@ while OPERATION_LOCALIZE == True:
             print("Current angle: ", g[0])
             
             if abs(g[0] - intended_g) > 5: # Straighten as needed
-                Slight_Straighten(intended_g, g[0])
+                Slight_Straighten(g[0], intended_g)
             
         
         # Turn left if space on left side  
@@ -329,7 +329,7 @@ while OPERATION_LOCALIZE == True:
             print("Current angle: ", g[0])
             
             if abs(g[0] - intended_g) > 5: # Straighten as needed
-                Slight_Straighten(intended_g, g[0])
+                Slight_Straighten(g[0], intended_g)
                 
         else: 
             break
