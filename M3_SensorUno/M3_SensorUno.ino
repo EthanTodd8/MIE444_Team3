@@ -113,8 +113,6 @@ void loop() {
   BT.listen();
   if (BT.available() > 0) {
     char ch = BT.read();
-    //Serial.print("read:");
-    //Serial.println(ch);
 
     if (ch == 'u') {
 
@@ -180,7 +178,7 @@ void loop() {
           mpu.dmpGetEuler(euler, &q);
 
           // convert to 360 deg range
-          if euler[0] * 180/M_PI < 0 {
+          if (euler[0] * 180/M_PI < 0) {
           BT.print(euler[0] * 180/M_PI + 360); BT.print(","); BT.println(".");
           } else {
           BT.print(euler[0] * 180/M_PI); BT.print(","); BT.println(".");

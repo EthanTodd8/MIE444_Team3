@@ -191,7 +191,13 @@ void loop() {
         #ifdef OUTPUT_READABLE_EULER
           mpu.dmpGetQuaternion(&q, fifoBuffer);
           mpu.dmpGetEuler(euler, &q);
-          Serial.print(euler[0] * 180/M_PI); Serial.print(",");
+
+          // convert to 360 deg range
+          if (euler[0] * 180/M_PI < 0) {
+          Serial.print(euler[0] * 180/M_PI + 360); Serial.print(","); BT.println(".");
+          } else {
+          Serial.print(euler[0] * 180/M_PI); Serial.print(","); BT.println(".");
+          }
         #endif
       
     }
