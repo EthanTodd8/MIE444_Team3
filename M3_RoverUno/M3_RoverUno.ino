@@ -17,14 +17,13 @@ int pos = 0; // variable to store servo position
 
 int motA_speed = 52;
 int motB_speed = 42;
-int motC_speed = 30;
 
 char val = 0;  //holds ascii from serial line
 
 
 void setup() {
   //Serial.begin(9600);
-  myservo.attach(4); //CHANGE PIN --> control pin
+  //myservo.attach(4); //CHANGE PIN --> control pin
   mySerial.begin(9600);
   //Serial.println("KISI Rover Uno is alive!");
 
