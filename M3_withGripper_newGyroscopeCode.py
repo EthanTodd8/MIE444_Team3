@@ -57,9 +57,12 @@ def read_g(offset):
             case = False
             for i in range(len((values_str))-1):
                 values.append(float(values_str[i]))
-            if values[0] == 0.0 or values[0] == 180.0:
-                read_g(offset)  #recursively call read_g if the reading is 0 or 180 degrees (erroneous)
-            values = [values[0] - offset]
+            while values[0] == 0.0 or values[0] == 180.0:
+                read_g(0)  #recursively call read_g if the reading is 0 or 180 degrees (erroneous)
+            if values[0] - offset < 0:
+                values = [values[0] - offset + 360]
+            elif values[0] - offset > 360: # this might not be needed since offset vals are always positive
+                values = [values[0] - offset - 360]
             return values
         case = True
 
@@ -255,7 +258,7 @@ while OPERATION_LOCALIZE == True:
         # Move forward if space in front
         if readings[2] > 13: 
             move_forward()
-            time.sleep(0.2) # Let rover finish moving
+            time.sleep(0.5) # Let rover finish moving-- same delay as in drive Arduino
             g = read_g(g_offset) # Check alignment
             print("Current angle: ", g[0])
             
