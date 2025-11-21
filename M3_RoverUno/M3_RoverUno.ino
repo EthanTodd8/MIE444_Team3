@@ -97,8 +97,8 @@ void loop() {
   }
 }
 
-// FUNCTIONS!!!!!!
 
+// FUNCTIONS!!!!!!
 void StopMotor() {
   //Motor A
   digitalWrite(in1A, LOW);
@@ -147,7 +147,6 @@ void TurnLeft() {
   digitalWrite(in2B, LOW);
   analogWrite(enB, motB_speed);
 }
-
 
 void TurnRight() {
   //Motor A
