@@ -142,13 +142,13 @@ def Slight_Straighten(intended_orientation, g_current):
         new_g_diff = g_adjusted[0] - intended_orientation # Check new difference
         
         # Check true distance apart        
-        if new_g_diff > 0 and new_g_diff > 180: 
-            g_diff = abs(g_diff - 360)
+        if new_g_diff > 180: 
+            g_diff = abs(new_g_diff - 360)
         elif new_g_diff < 0: 
             if new_g_diff > -180:
-                g_diff = abs(g_diff)
+                g_diff = abs(new_g_diff)
             elif new_g_diff < -180:
-                g_diff += 360  
+                g_diff = new_g_diff + 360  
         else:
             g_diff = new_g_diff
         
