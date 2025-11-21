@@ -114,6 +114,9 @@ def Slight_Straighten(intended_orientation, g_current):
     g_diff = g_current - intended_orientation
     
     while abs(g_diff) > 5:
+        g_adjusted = read_g(g_offset)
+        g_diff = g_adjusted[0] - intended_orientation # Check new difference
+        
         # Adjust to be in range-- considered too far left or right up until 180 deg on either direction
         if g_diff > 0:
             if g_diff < 180: # Too far right
@@ -138,9 +141,9 @@ def Slight_Straighten(intended_orientation, g_current):
         g_adjusted = read_g(g_offset)
         new_g_diff = g_adjusted[0] - intended_orientation # Check new difference
         
+        # Check true distance apart        
         if new_g_diff > 0 and new_g_diff > 180: 
             g_diff = abs(g_diff - 360)
-                
         elif new_g_diff < 0: 
             if new_g_diff > -180:
                 g_diff = abs(g_diff)
