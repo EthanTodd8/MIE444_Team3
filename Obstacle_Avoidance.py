@@ -16,6 +16,9 @@ D = 8.13
 E = 25.4
 F = 38.1
 
+g_readings = []
+readings = []
+
 
 def transmit(data):
     '''Function to transmit data over serial connection'''
@@ -86,6 +89,17 @@ def move_left():
 def stop():
     '''Function to stop rover motors from moving'''
     transmit('S')
+    
+def orient():
+    '''Function to orient rover using gyroscope data'''
+    g_data = read_g()
+    yaw = g_data[0]
+    if yaw < -5:
+        move_right()
+    elif yaw > 5:
+        move_left()
+    else:
+        stop()
 
 RUN_NEW = True
 RUN_PREV = not RUN_NEW
@@ -119,10 +133,12 @@ while RUN_PREV:
         move_forward()
     readings.clear()
     
-### New logic based on continuous drive ###
+### New logic###
 while RUN_NEW:
     print('running_new')
     readings = read_us() #readings in format [Back, Left, Front, Right]
+    g_readings = read_g()
+    print(g_readings)
     print(readings)
     if readings[2]<20:
         stop()

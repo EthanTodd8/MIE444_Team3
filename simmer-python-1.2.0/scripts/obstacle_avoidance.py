@@ -214,7 +214,7 @@ FRAMEEND = ']'
 CMD_DELIMITER = ','
 
 ### Set whether to use TCP (SimMeR) or serial (Arduino) ###
-SIMULATE = False
+SIMULATE = True
 
 
 
@@ -236,7 +236,77 @@ else:
     TRANSMIT_PAUSE = 0
 
 
+### FUNCTIONS ###
+def g_read():
+    # Check gyroscope 'g0' ANGLE
+    packet_tx = packetize('g0')
+    if packet_tx:
+        transmit(packet_tx)
+        [responses, time_rx] = receive()
+    return(float(responses[0][1]))
+            
+def move_right_big():
+    '''Function to move rover right by sending 'R' '''
+    packet_tx = packetize('r0:40')
+    if packet_tx:
+        transmit(packet_tx)
+        [responses, time_rx] = receive()
+        print(f"Drive command response: {response_string('r0:40',responses)}")
 
+def move_right_small():
+    ''' Function to move rover right be a small increment by sending 'r' '''
+    packet_tx = packetize('r0:0.5')
+    if packet_tx:
+        transmit(packet_tx)
+        [responses, time_rx] = receive()
+        print(f"Drive command response: {response_string('r0:0.5',responses)}")
+
+def move_left_big():
+    '''Function to move rover left by sending 'L' '''
+    packet_tx = packetize('r0:-40')
+    if packet_tx:
+        transmit(packet_tx)
+        [responses, time_rx] = receive()
+        print(f"Drive command response: {response_string('r0:-40',responses)}")
+
+def move_left_small():
+    ''' Function to move rover left by a small increment by sending 'l' '''
+    packet_tx = packetize('r0:-0.5')
+    if packet_tx:
+        transmit(packet_tx)
+        [responses, time_rx] = receive()
+        print(f"Drive command response: {response_string('r0:-0.5',responses)}")
+    
+def Slight_Straighten(intended_orientation, g_current): 
+    print("Re-aligning...")
+    g_adjusted = [] 
+    g_diff = g_current - intended_orientation
+    
+    while abs(g_diff) > 3:
+        # Adjust to be in range-- considered too far left or right up until 180 deg on either direction
+        if g_diff > 0:
+            if g_diff < 180: # Too far right
+                g_diff = g_diff
+                move_left_small()
+            elif g_diff > 180: # Too far left
+                g_diff = abs(g_diff - 360)
+                move_right_small()
+                
+        elif g_diff < 0: 
+            if g_diff > -180: # Too far left
+                g_diff = abs(g_diff)
+                move_right_small()
+            elif g_diff < -180: # Too far right
+                g_diff += 360  
+                move_left_small()
+          
+        time.sleep(0.01) # Let movement finish before taking new g reading
+        g_adjusted = [g_read()]
+        g_diff = g_adjusted[0] - intended_orientation # Check new difference
+        print(g_diff)
+    print("Successfully aligned!")
+    
+    
 
 ############## Main section for the communication client ##############
 RUN_COMMUNICATION_CLIENT = False # If true, run this. If false, skip it
@@ -253,51 +323,110 @@ while RUN_COMMUNICATION_CLIENT:
     [responses, time_rx] = receive()
     if responses[0]:
         print(f"At time '{time_rx}' received from {SOURCE}:\n{response_string(cmd, responses)}")
+       
+        
+        # FRONT
+        transmit(packetize('u0'))
+        [responses, time_rx] = receive()
+        front_reading = float(responses[0][1])
+        print(f"{front_reading}")
+            
+        # RIGHT
+        transmit(packetize('u1'))
+        [responses, time_rx] = receive()
+        right_reading = float(responses[0][1])
+            
+        # LEFT
+        transmit(packetize('u2'))
+        [responses, time_rx] = receive()
+        left_reading = float(responses[0][1])
+            
+        # BACK
+        transmit(packetize('u3'))
+        [responses, time_rx] = receive()
+        back_reading = float(responses[0][1])
+                    
+            
+        print(f"...... F:{front_reading} ...... \n .. L:{left_reading} .. R:{right_reading} .. \n ...... B:{back_reading} ......")
+        
+
     else:
         print(f"At time '{time_rx}' received from {SOURCE}:\nMalformed Packet")
 
 
-block_loc = input('Enter the block location: ')
-drop_loc = input('Enter the drop-off location: ')
-## WRITE CODE TO CREATE CMD SEQUENCES BASED ON INPUTTED DESTINATIONS ##
-
 
 ############## Main section for the open loop control algorithm ##############
 # The sequence of commands to run
+intended_g = 0
+g = []
 CMD_SEQUENCE = ['w0:36', 'r0:90', 'w0:36', 'r0:90', 'w0:12', 'r0:-90', 'w0:24', 'r0:-90', 'w0:6', 'r0:720']
 LOOP_PAUSE_TIME = 1 # seconds
 
 # Main loop
-PHASE2 = True # If true, run this. If false, skip it
+RUN_DEAD_RECKONING = True # If true, run this. If false, skip it
 ct = 0
-while PHASE2:
+while RUN_DEAD_RECKONING:
     # Pause for a little while so as to not spam commands insanely fast
     time.sleep(LOOP_PAUSE_TIME)
 
     # If the command sequence hasn't been completed yet
     if ct < len(CMD_SEQUENCE):
 
-        # Check an ultrasonic sensor 'u0'
-        packet_tx = packetize('u0')
+        # Check an ultrasonic sensor 'u0' FRONT
+        packet_tx = packetize('u0')  
         if packet_tx:
             transmit(packet_tx)
             [responses, time_rx] = receive()
             print(f"Ultrasonic 0 reading: {response_string('u0',responses)}")
 
-        # Check an ultrasonic sensor 'u1'
+            
+
+        # Check an ultrasonic sensor 'u1' RIGHT
         packet_tx = packetize('u1')
         if packet_tx:
             transmit(packet_tx)
             [responses, time_rx] = receive()
             print(f"Ultrasonic 1 reading: {response_string('u1',responses)}")
+            
 
+        
+        # Check an ultrasonic sensor 'u2' LEFT
+        packet_tx = packetize('u2')
+        if packet_tx:
+            transmit(packet_tx)
+            [responses, time_rx] = receive()
+            print(f"Ultrasonic 2 reading: {response_string('u2',responses)}")
+
+            
+        # Check an ultrasonic sensor 'u3' BACK
+        packet_tx = packetize('u3')
+        if packet_tx:
+            transmit(packet_tx)
+            [responses, time_rx] = receive()
+            print(f"Ultrasonic 3 reading: {response_string('u3',responses)}")
+        
+        # Check gyroscope 'g0' ANGLE
+        g = [g_read()]
+        print(f"Gyroscope reading: ", g[0])
+            
+             
+        if abs(g[0] - intended_g) > 3: # if > 3 deg from desired         
+            # Send the emergency stop command
+            transmit(packetize('xx'))
+            [responses, time_rx] = receive()
+                
+            Slight_Straighten(intended_g, g[0])
+              
+                
+        '''
         # Check the remaining three sensors: gyroscope, compass, and IR
         packet_tx = packetize('g0,c0,i0')
         if packet_tx:
             transmit(packet_tx)
             [responses, time_rx] = receive()
             print(f"Other sensor readings:\n{response_string('g0,c0,i0',responses)}")
-
+        '''
+        
         # Send a drive command
         packet_tx = packetize(CMD_SEQUENCE[ct])
         if packet_tx:
@@ -313,5 +442,11 @@ while PHASE2:
 
     # If the command sequence is complete, finish the program
     else:
-        PHASE2 = False
+        RUN_DEAD_RECKONING = False
         print("Sequence complete!")
+        
+        
+        
+        
+        
+        

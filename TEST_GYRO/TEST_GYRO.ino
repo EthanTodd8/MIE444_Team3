@@ -2,9 +2,8 @@
 #include <SoftwareSerial.h>
 #include "I2Cdev.h"
 #include "MPU6050_6Axis_MotionApps20.h"
-#include "MPU6050.h"
+//#include "MPU6050.h"
 
-// Arduino Wire library is required if I2Cdev I2CDEV_ARDUINO_WIRE implementation is used in I2Cdev.h
 #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
   #include "Wire.h"
 #endif
@@ -77,7 +76,7 @@ unsigned long getAveragePing(NewPing &sonar) {
 
 
 void setup() {
-  // join I2C bus (I2Cdev library doesn't do this automatically)
+  // join I2C bus
   #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
     Wire.begin();
     TWBR = 24; // 400kHz I2C clock (200kHz if CPU is 8MHz)
@@ -85,12 +84,20 @@ void setup() {
     Fastwire::setup(400, true);
   #endif
     
-  //Serial.begin(9600);
-  //while (!Serial); // wait for Leonardo enumeration, others continue immediately
+  Serial.begin(9600);
+  while (!Serial); // wait for Leonardo enumeration, others continue immediately
   BT.begin(9600);
   mySerial.begin(9600);
 
   mpu.initialize(); // initialize gyroscope device
+
+/*
+  Serial.println(F("\nSend any character to begin DMP programming and demo: "));
+  while (Serial.available() && Serial.read()); // empty buffer
+  while (!Serial.available());             // wait for data
+  while (Serial.available() && Serial.read()); // empty buffer again
+*/
+
 
   devStatus = mpu.dmpInitialize(); // load and configure the DMP for gyroscope
 
@@ -111,15 +118,12 @@ void setup() {
 }
 
 
-
 void loop() {
-  //Serial.println("start");
-  BT.listen();
-  if (BT.available() > 0) {
-    char ch = BT.read();
-    //Serial.print("read:");
-    //Serial.println(ch);
+  //BT.listen();
+  if (Serial.available() > 0) {
+    char ch = Serial.read();
 
+    // ULTRASONIC SENSORS
     if (ch == 'u') {
 
       // Read IR
@@ -139,22 +143,24 @@ void loop() {
       float dist3 = (0.5)*(avg3)*(0.034);
       float dist4 = (0.5)*(avg4)*(0.034);
 
+      /*
       // Print results
       BT.print(dist0); BT.print(","); //print results on one line
       BT.print(dist1); BT.print(",");
       BT.print(dist2); BT.print(",");
       BT.print(dist3); BT.print(",");
       BT.print(dist4); BT.print(","); //print order [Back, Left, Front, Right]
-      // Serial.print("Sensor 0: "); Serial.println(avg0);
-      // Serial.print("Sensor 1: "); Serial.println(avg1);
-      // Serial.print("Sensor 2: "); Serial.println(avg2);
-      // Serial.print("Sensor 3: "); Serial.println(avg3);
-      // Serial.print("Sensor 4: "); Serial.println(avg4);
-      //Serial.print("IR: "); Serial.println(irValue);
+      BT.println(".");
+      */
 
+      // Visual Representation
+      BT.print("...... F:"); BT.print(dist2); BT.print("......"); 
+      BT.print(".. L:"); BT.print(dist1); BT.print(" .. R:"); BT.print(dist4); BT.print(" .."); 
+      BT.print("...... B:"); BT.print(dist0); BT.print("......"); 
       BT.println(".");
     }
 
+    
     // GYROSCOPE
     else if (ch == 'g') {
       //if (!dmpReady) return; // if programming failed, don't try to do anything
@@ -185,9 +191,17 @@ void loop() {
         #ifdef OUTPUT_READABLE_EULER
           mpu.dmpGetQuaternion(&q, fifoBuffer);
           mpu.dmpGetEuler(euler, &q);
-          Serial.print(euler[0] * 180/M_PI); Serial.print(",");
+
+          // convert to 360 deg range
+          if (euler[0] * 180/M_PI < 0) {
+          Serial.print(euler[0] * 180/M_PI + 360); Serial.print(","); BT.println(".");
+          } else {
+          Serial.print(euler[0] * 180/M_PI); Serial.print(","); BT.println(".");
+          }
         #endif
+      
     }
+
 
 
     else {  

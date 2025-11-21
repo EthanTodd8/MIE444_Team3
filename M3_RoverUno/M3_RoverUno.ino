@@ -1,23 +1,29 @@
+#include <Servo.h>
 #include <SoftwareSerial.h> // Software Serial for functions
 SoftwareSerial mySerial (A4, A5); //RX | TX 
+Servo myservo; // create servo object called myservo
 
 // Connect motor controller pins to Arduino Digital Pins
-//Motor 1
+//Motor A
 int enA = 5;
 int in1A = 6;
 int in2A = 7;
-//Motor 2
+//Motor B
 int enB = 9;
 int in1B = 10;
 int in2B = 11;
+//Servo Motor
+int pos = 0; // variable to store servo position
 
 int motA_speed = 52;
 int motB_speed = 42;
 
 char val = 0;  //holds ascii from serial line
 
+
 void setup() {
   //Serial.begin(9600);
+  //myservo.attach(4); //CHANGE PIN --> control pin
   mySerial.begin(9600);
   //Serial.println("KISI Rover Uno is alive!");
 
@@ -29,6 +35,7 @@ void setup() {
   pinMode(in1B, OUTPUT);
   pinMode(in2B, OUTPUT);
 }
+
 void loop() {
   if (mySerial.available()) { 
     val = mySerial.read();
@@ -71,12 +78,20 @@ void loop() {
     } else if (val == 'S') { //Stop Motor
       StopMotor();
       mySerial.println("stop");
+    
+    } else if (val == 'P') { // pick up block
+      CloseGrip();
+      mySerial.println("Grippers closed");
+
+    } else if (val == 'D') { // drop off block
+      OpenGrip();
+      mySerial.println("Grippers opened");
     }
   }
 }
 
-// FUNCTIONS!!!!!!
 
+// FUNCTIONS!!!!!!
 void StopMotor() {
   //Motor A
   digitalWrite(in1A, LOW);
@@ -126,7 +141,6 @@ void TurnLeft() {
   analogWrite(enB, motB_speed);
 }
 
-
 void TurnRight() {
   //Motor A
   digitalWrite(in1A, HIGH);
@@ -137,4 +151,20 @@ void TurnRight() {
   digitalWrite(in1B, LOW);
   digitalWrite(in2B, HIGH);
   analogWrite(enB, motB_speed);
+}
+
+
+// GRIPPERS
+void CloseGrip() {
+  for (pos = 0; pos <= 45; pos += 1) { 
+    myservo.write(pos);               
+    delay(15);  
+  }
+}
+
+void OpenGrip() {
+  for (pos = 45; pos >= 0; pos -= 1) {  
+    myservo.write(pos);               
+    delay(15); 
+  }
 }

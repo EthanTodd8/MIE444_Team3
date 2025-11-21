@@ -283,6 +283,8 @@ counter = 0
 sensor_front = []
 sensor_left = []
 sensor_right = []
+path_1 = False
+path_2 = False
 
 if AUTOMATIC:
     # Pause for a little while so as to not spam commands insanely fast
@@ -364,6 +366,13 @@ if AUTOMATIC:
             if packet_tx:
                 transmit(packet_tx)
                 [responses, time_rx] = receive()
+        
+        elif sensor_front[counter] < 5 and sensor_right[counter] < 5 and sensor_left[counter] < 5:
+            LZ_L = False    #Stop Loop
+            path_1 = True    # Follow Path 1 to Loading Zone
+            print("Rover is at bottom right portion of the map, use path_1 to loading zone.")
+            print(path_1)
+
 
     while LZ_R: 
         counter += 1 # Add 1 to counter for array indexing
@@ -408,7 +417,137 @@ if AUTOMATIC:
                 transmit(packet_tx)
                 [responses, time_rx] = receive()
 
+        elif sensor_front[counter] < 5 and sensor_left[counter] < 5 and sensor_right[counter] < 5: #If made it to the right end of maze
+            LZ_R = False    # Stop Loop
+            path_2 = True   # Run the second path to 
+            print("Rover is at top-right position of map, use path_2 to get to loading zone.")
+            print(path_2)
 
+############# Main section for the paths to the loading zone #############
+
+ct = 0 # initialize counter
+while path_1:
+
+    cmd_list = ['w0:-23', 'r0:90', 'w0:48', 'r0:90', 'w0:12', 'r0:-90', 'w0:20'] #Hard-Coded path to LZ
+
+    # Pause for a little while so as to not spam commands insanely fast
+    time.sleep(LOOP_PAUSE_TIME)
+
+    # If the command sequence hasn't been completed yet
+    if ct < len(cmd_list):
+        # Send a drive command
+        packet_tx = packetize(cmd_list[ct])
+        if packet_tx:
+            transmit(packet_tx)
+            [responses, time_rx] = receive()
+            print(f"Drive command response: {response_string(cmd_list[ct],responses)}")
+
+            # If we receive a drive response indicating the command was accepted,
+            # move to the next command in the sequence
+            if responses[0]:
+                if responses[0][1] == 'True':
+                    ct += 1
+    else: 
+        path_1 = False
+        print("Rover has reached Loading Zone!")
+        Phase2 = True
+
+while path_2:
+
+    cmd_list = ['w0:-12', 'r0:-90', 'w0:48', 'r0:-90', 'w0:12', 'r0:90', 'w0:20'] #Hard-Coded path to LZ
+
+    # Pause for a little while so as to not spam commands insanely fast
+    time.sleep(LOOP_PAUSE_TIME)
+
+    # If the command sequence hasn't been completed yet
+    if ct < len(cmd_list):
+        # Send a drive command
+        packet_tx = packetize(cmd_list[ct])
+        if packet_tx:
+            transmit(packet_tx)
+            [responses, time_rx] = receive()
+            print(f"Drive command response: {response_string(cmd_list[ct],responses)}")
+
+            # If we receive a drive response indicating the command was accepted,
+            # move to the next command in the sequence
+            if responses[0]:
+                if responses[0][1] == 'True':
+                    ct += 1
+    else: 
+        path_2 = False
+        print("Rover has reached Loading Zone!")
+        Phase2 = True
+
+#Block Follower Code
+
+#Assuming Reached Loading Position
+#Phase2 = True
+
+CMD_SEQ_1 = ['r0:180','w0:20', 'r0:90', 'w0:10', 'r0:-90', 'w0:25', 'r0:-90', 'w0:8']
+CMD_SEQ_2 = ['w0:15', 'r0:-90', 'w0:35', 'r0:-90', 'w0:24', 'r0:-90', 'w0:10']
+CMD_SEQ_3 = ['r0:180','w0:20', 'r0:90', 'w0:12','r0:-90', 'w0:48', 'r0:-90', 'w0:15']
+CMD_SEQ_4 = ['r0:180','w0:20', 'r0:90', 'w0:12','r0:-90', 'w0:48', 'r0:90', 'w0:23']
+
+
+ct = 0
+cmd = input('Input Block Position: ')
+
+while Phase2:
+    
+    if cmd == '1':
+        if ct < len(CMD_SEQ_1):
+            packet_tx = packetize(CMD_SEQ_1[ct])
+            if packet_tx:
+                transmit(packet_tx)
+                [responses, time_rx] = receive()
+                print(f"Drive command response: {response_string(CMD_SEQ_1[ct],responses)}")
+                
+            if responses[0]:
+                if responses[0][1] == 'True':
+                    ct += 1 
+
+    elif cmd == '2':
+        if ct < len(CMD_SEQ_2):
+            packet_tx = packetize(CMD_SEQ_2[ct])
+            if packet_tx:
+                transmit(packet_tx)
+                [responses, time_rx] = receive()
+                print(f"Drive command response: {response_string(CMD_SEQ_2[ct],responses)}")
+                
+            if responses[0]:
+                if responses[0][1] == 'True':
+                    ct += 1
+
+    elif cmd == '3':
+        if ct < len(CMD_SEQ_3):
+            packet_tx = packetize(CMD_SEQ_3[ct])
+            if packet_tx:
+                transmit(packet_tx)
+                [responses, time_rx] = receive()
+                print(f"Drive command response: {response_string(CMD_SEQ_3[ct],responses)}")
+                
+            if responses[0]:
+                if responses[0][1] == 'True':
+                    ct += 1  
+                
+    elif cmd == '4':
+        if ct < len(CMD_SEQ_4):
+            packet_tx = packetize(CMD_SEQ_4[ct])
+            if packet_tx:
+                transmit(packet_tx)
+                [responses, time_rx] = receive()
+                print(f"Drive command response: {response_string(CMD_SEQ_4[ct],responses)}")
+                
+            if responses[0]:
+                if responses[0][1] == 'True':
+                    ct += 1
+        else:
+            PHASE2 = False
+            print("Block found!")
+            break
+            
+            # If the command sequence is complete, finish the program
+    
 ############## Main section for the manual wall follower algorithim ##############
 
 MANUAL = False #Set parameter to TRUE for Manual Control
