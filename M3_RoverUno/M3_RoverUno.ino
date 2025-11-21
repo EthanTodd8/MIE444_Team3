@@ -23,7 +23,7 @@ char val = 0;  //holds ascii from serial line
 
 void setup() {
   //Serial.begin(9600);
-  //myservo.attach(4); //CHANGE PIN --> control pin
+  myservo.attach(3); 
   mySerial.begin(9600);
   //Serial.println("KISI Rover Uno is alive!");
 
@@ -156,15 +156,15 @@ void TurnRight() {
 
 // GRIPPERS
 void CloseGrip() {
-  for (pos = 0; pos <= 45; pos += 1) { 
+  for (pos = 0; pos <= 20; pos += 1) { 
     myservo.write(pos);               
-    delay(15);  
+    delay(1500);  // made it much slower for troubleshooting first
   }
 }
 
 void OpenGrip() {
-  for (pos = 45; pos >= 0; pos -= 1) {  
+  for (pos = 20; pos >= 0; pos -= 1) {  
     myservo.write(pos);               
-    delay(15); 
+    delay(1500); 
   }
 }
