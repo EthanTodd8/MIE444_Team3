@@ -133,10 +133,21 @@ def Slight_Straighten(intended_orientation, g_current):
                 g_diff += 360  
                 move_left_small()
                 print("Adjusting left")
-          
+                
         time.sleep(0.01) # Let movement finish before taking new g reading
         g_adjusted = read_g(g_offset)
-        g_diff = g_adjusted[0] - intended_orientation # Check new difference
+        new_g_diff = g_adjusted[0] - intended_orientation # Check new difference
+        
+        if new_g_diff > 0 and new_g_diff > 180: 
+            g_diff = abs(g_diff - 360)
+                
+        elif new_g_diff < 0: 
+            if new_g_diff > -180:
+                g_diff = abs(g_diff)
+            elif new_g_diff < -180:
+                g_diff += 360  
+        else:
+            g_diff = new_g_diff
         
     print("Successfully aligned!")
     
