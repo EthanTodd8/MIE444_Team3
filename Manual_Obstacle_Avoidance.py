@@ -3,7 +3,11 @@ import serial
 
 ### Serial Setup ###
 BAUDRATE = 9600         # Baudrate in bps
+<<<<<<< Updated upstream
 PORT_SERIAL = 'COM8'    # COM port identification
+=======
+PORT_SERIAL = '/dev/cu.KISI'    # COM port identification
+>>>>>>> Stashed changes
 TIMEOUT_SERIAL = 1      # Serial port timeout, in seconds
 
 ser = serial.Serial(PORT_SERIAL, BAUDRATE, timeout=TIMEOUT_SERIAL)
@@ -57,9 +61,10 @@ def read_g():
         ser.write(send.encode('utf-8')) #sends g cmd to Arduino
         time.sleep(0.001) #add delay
         line = ser.readline().strip().decode('ascii')
-        print(line)
+        
 
         if line:
+            print(line)
             # Split using ',' as the delimiter
             values_str = line.split(',') # List to store gyroscope readings
             print(values_str)
@@ -98,7 +103,7 @@ SLEEP_TIME = 0.001
 
 while RUN:
     time.sleep(SLEEP_TIME)  # Pause Time 
-    print('running')
+    #print('running')
 
     cmd = input('Enter char: ')
     if cmd == 'u':
@@ -122,6 +127,7 @@ while RUN:
     elif cmd == 'B':
         move_backward()
         
+<<<<<<< Updated upstream
     elif cmd == 'l':
         small_move_left()
         
@@ -129,3 +135,6 @@ while RUN:
         small_move_right()
         
     readings.clear()
+=======
+    #readings.clear()
+>>>>>>> Stashed changes

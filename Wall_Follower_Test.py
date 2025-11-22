@@ -278,7 +278,7 @@ else:
 ############## Main section for the automatic wall follower algorithim ##############
 LOOP_PAUSE_TIME = 1 # seconds
 # Main loop
-AUTOMATIC = True # If true, run this. If false, skip it
+AUTOMATIC =     False # If true, run this. If false, skip it
 counter = 0
 sensor_front = []
 sensor_left = []
@@ -417,6 +417,7 @@ if AUTOMATIC:
                 transmit(packet_tx)
                 [responses, time_rx] = receive()
 
+<<<<<<< Updated upstream
         elif sensor_front[counter] < 5 and sensor_left[counter] < 5 and sensor_right[counter] < 5: #If made it to the right end of maze
             LZ_R = False    # Stop Loop
             path_2 = True   # Run the second path to 
@@ -487,6 +488,17 @@ CMD_SEQ_1 = ['r0:180','w0:20', 'r0:90', 'w0:10', 'r0:-90', 'w0:25', 'r0:-90', 'w
 CMD_SEQ_2 = ['w0:15', 'r0:-90', 'w0:35', 'r0:-90', 'w0:24', 'r0:-90', 'w0:10']
 CMD_SEQ_3 = ['r0:180','w0:20', 'r0:90', 'w0:12','r0:-90', 'w0:48', 'r0:-90', 'w0:15']
 CMD_SEQ_4 = ['r0:180','w0:20', 'r0:90', 'w0:12','r0:-90', 'w0:48', 'r0:90', 'w0:23']
+=======
+#Block Follower Code
+
+#Assuming Reached Loading Position
+Phase2 = True
+
+CMD_SEQ_1 = ['w0:25', 'r0:90', 'w0:10', 'r0:-90', 'w0:25', 'r0:-90', 'w0:8']
+CMD_SEQ_2 = ['r0:180', 'w0:10', 'r0:-90', 'w0:33', 'r0:-90', 'w0:24', 'r0:-90', 'w0:8']
+CMD_SEQ_3 = ['r0:180', 'w0:10', 'r0:-90', 'w0:33', 'r0:-90', 'w0:60','r0:-90', 'w0:25', 'r0:90', 'w0:25', 'r0:-90', 'w0:10']
+CMD_SEQ_4 = ['r0:180', 'w0:10', 'r0:-90', 'w0:33', 'r0:-90', 'w0:60','r0:-90', 'w0:25', 'r0:90', 'w0:25', 'r0:90', 'w0:25']
+>>>>>>> Stashed changes
 
 
 ct = 0
@@ -504,8 +516,13 @@ while Phase2:
                 
             if responses[0]:
                 if responses[0][1] == 'True':
+<<<<<<< Updated upstream
                     ct += 1 
 
+=======
+                    ct += 1
+                    
+>>>>>>> Stashed changes
     elif cmd == '2':
         if ct < len(CMD_SEQ_2):
             packet_tx = packetize(CMD_SEQ_2[ct])
@@ -517,7 +534,11 @@ while Phase2:
             if responses[0]:
                 if responses[0][1] == 'True':
                     ct += 1
+<<<<<<< Updated upstream
 
+=======
+                    
+>>>>>>> Stashed changes
     elif cmd == '3':
         if ct < len(CMD_SEQ_3):
             packet_tx = packetize(CMD_SEQ_3[ct])
@@ -528,8 +549,13 @@ while Phase2:
                 
             if responses[0]:
                 if responses[0][1] == 'True':
+<<<<<<< Updated upstream
                     ct += 1  
                 
+=======
+                    ct += 1
+                    
+>>>>>>> Stashed changes
     elif cmd == '4':
         if ct < len(CMD_SEQ_4):
             packet_tx = packetize(CMD_SEQ_4[ct])
@@ -543,11 +569,21 @@ while Phase2:
                     ct += 1
         else:
             PHASE2 = False
+<<<<<<< Updated upstream
             print("Block found!")
+=======
+            print("Sequence complete!")
+>>>>>>> Stashed changes
             break
             
             # If the command sequence is complete, finish the program
     
+<<<<<<< Updated upstream
+=======
+        
+                    
+    
+>>>>>>> Stashed changes
 ############## Main section for the manual wall follower algorithim ##############
 
 MANUAL = False #Set parameter to TRUE for Manual Control
@@ -600,7 +636,7 @@ while MANUAL:
             [responses, time_rx] = receive()
             sensor_back = responses[0][1]
 
-        front_string = f"......{sensor_front}......\n..{sensor_left}..{sensor_right}..\n......{sensor_back}......"
+        front_string = f"......{sensor_front}......\n..{sensor_left}..{sensor_right}..."
         print(front_string)
 
 

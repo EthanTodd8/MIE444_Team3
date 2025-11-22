@@ -28,21 +28,6 @@ def sense_u(world, mask, p, SenVal, heading ):
     u0, u1, u2, u3, u4 = SenVal
     close = [u < threshold for u in [u0, u1, u2, u3]]
     close_count = sum(close)
-
-    
-    # if close_count == 0:
-    #     sensor_zone = 0  # free
-    # elif close_count == 1:
-    #     sensor_zone = 1  #1 side blocked, 3 free
-    # elif ((close[0] and close[1]) or (close[0] and close[2]) or
-    #       (close[2] and close[3]) or (close[1] and close[3])):
-    #     sensor_zone = 2  # adjacent blocking
-    # elif (close[0] and close[3]) or (close[1] and close[2]):
-    #     sensor_zone = 5  # opposite blocking
-    # elif close_count == 3:
-    #     sensor_zone = 3  #3 blocked, 1 free
-    # else:
-    #     sensor_zone = 4  # obstacle (all sides blocked)
     
     if close_count == 0:
         sensor_zone = 0  # free
@@ -124,18 +109,6 @@ def move(p, mask, heading, Move):
     pnew = convolve2d(p, K, mode='same', boundary='fill', fillvalue=0)
 
     print(f"heading: {heading}")
-
-    # # --- DIRECTION HANDLING ---
-    # if Move == 'L':
-    #     heading = (heading + 90) % 360
-        
-    # elif Move == 'R':
-    #     heading = (heading - 90) % 360
-        
-    # elif Move == 'B':
-    #     heading = (heading + 180) % 360
-        
-    # 'F' means forward → no change to heading
     
     #rad = np.deg2rad((heading + 90) % 360)
     rad = np.deg2rad(heading)
@@ -163,36 +136,6 @@ def move(p, mask, heading, Move):
         # move up: shift contents upward
         shifted = np.vstack([np.zeros((1, pnew.shape[1])), pnew[:-1, :]])
         pnew = (1 - step_fraction) * pnew + step_fraction * shifted
-
-    # # Determine movement direction
-    # col_move = np.cos(np.deg2rad(heading))
-    # row_move = np.sin(np.deg2rad(heading))
-
-    # # --- COLUMN (X) MOVEMENT ---
-    # step_fraction = 0.5#rover moves 5 inches = 0.4 of a cell (12.5 inches)
-    
-    # if col_move > 0:
-    #     # Move right
-    #     shifted = np.hstack([np.zeros((pnew.shape[0], 1)), pnew[:, :-1]])
-    #     pnew = (1 - step_fraction) * pnew + step_fraction * shifted
-    # elif col_move < 0:
-    #     # Move left
-    #     shifted = np.hstack([pnew[:, 1:], np.zeros((pnew.shape[0], 1))])
-    #     pnew = (1 - step_fraction) * pnew + step_fraction * shifted
-
-    # # --- ROW (Y) MOVEMENT ---
-    # if row_move < 0:
-    #     # Move up
-    #     shifted = np.vstack([np.zeros((1, pnew.shape[1])), pnew[:-1, :]])
-    #     pnew = (1 - step_fraction) * pnew + step_fraction * shifted
-        
-    # elif row_move > 0:
-    #     # Move down
-    #     shifted = np.vstack([pnew[1:, :], np.zeros((1, pnew.shape[1]))])
-    #     pnew = (1 - step_fraction) * pnew + step_fraction * shifted
-
-    # Apply mask
-    #pnew = pnew * mask
     
     pnew[mask ==4] = 0  # set probabilities to zero where mask indicates obstacle
 
@@ -213,8 +156,8 @@ def move(p, mask, heading, Move):
 heading = 180 # 270° is down, 90 is up, 0 is left, 180 is right
 
 # Provide measurements and movements 
-m_u = [15.182, 3.62, 3.254, 28.461, 15.238, 15.339, 3.824, 3.274, 27.769, 29.258, 13.898, 3.423, 3.662, 31.035, 32.075, 11.293, 3.367, 3.37, 33.504, 32.181, 10.406, 3.528, 3.411, 35.925, 33.611, 6.666, 15.135, 3.689, 37.091, 35.894, 6.357, 15.531, 3.387, 38.433, 39.441, 3.149, 15.934, 3.349, 39.781, 41.304, 3.105, 9.254, 4.617, 4.357, 3.81, 15.88, 36.086, 3.565, 3.408, 3.675, 14.002, 37.951, 3.459, 6.048, 6.489, 11.16, 39.837, 3.522, 8.09, 7.282, 10.595, 6.988, 3.493, 10.144, 11.12, 7.057, 3.446, 27.279, 11.563, 11.563, 6.564, 3.629, 34.424, 14.443, 15.151, 2.923, 3.484, 49.757, 14.417, 15.956, 3.208, 3.999, 6.229, 5.101, 3.986, 50.672, 3.592, 15.386, 3.431, 3.394, 50.472, 3.654, 15.188, 6.112, 6.625, 46.477, 3.181, 15.367, 7.696, 7.337]
-m_m = ['F', 'F', 'F', 'F', 'F', 'F', 'R', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'L', 'F', 'F', 'F', 'F',]
+m_u = [15.182, 3.62, 3.254, 28.461, 15.238, 15.339, 3.824, 3.274, 27.769, 29.258, 13.898, 3.423, 3.662, 31.035, 32.075, 11.293, 3.367, 3.37, 33.504, 32.181, 10.406, 3.528, 3.411, 35.925, 33.611, 6.666, 15.135, 3.689, 37.091, 35.894, 6.357, 15.531, 3.387, 38.433, 39.441, 3.149, 15.934, 3.349, 39.781, 41.304, 3.105, 9.254, 4.617, 4.357, 3.81, 15.88, 36.086, 3.565, 3.408, 3.675, 14.002, 37.951, 3.459, 6.048, 6.489, 11.16, 39.837, 3.522, 8.09, 7.282, 10.595, 6.988, 3.493, 10.144, 11.12, 7.057, 3.446, 27.279, 11.563, 11.563, 6.564, 3.629, 34.424, 14.443, 15.151, 2.923, 3.484, 49.757, 14.417, 15.956, 3.208, 3.999, 6.229, 5.101, 3.986, 50.672, 3.592, 15.386, 3.431, 3.394, 50.472, 3.654, 15.188, 6.112, 6.625, 46.477, 3.181, 15.367, 7.696, 7.337, 47.972, 3.608, 3.622, 9.856, 10.251, 42.6, 3.593, 3.437, 11.195, 11.786, 43.19, 3.357, 3.315, 13.843, 14.368, 40.831, 3.225, 3.573, 15.508, 15.46, 41.601, 3.533, 3.44, 17.556, 17.566, 33.54, 3.353, 3.338, 18.866, 19.682]
+m_m = ['F', 'F', 'F', 'F', 'F', 'F', 'R', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'L', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F']
 
 # Initialization of the world
 dim1, dim2 = 32, 16   # world dimensions (must match ultra)
@@ -298,7 +241,7 @@ for k in range(len(m_m)):
     plt.pause(0.5)
 
     # Movement update
-    p, heading = move(p, M, heading, m_m[k])  
+    p, heading = move(p, M, heading, m_m[k]) 
 
 plt.show()
 
