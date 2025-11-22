@@ -3,7 +3,7 @@ import serial
 
 ### Serial Setup ###
 BAUDRATE = 9600         # Baudrate in bps
-PORT_SERIAL = 'COM8'    # COM port identification
+PORT_SERIAL = 'COM7'    # COM port identification
 TIMEOUT_SERIAL = 1      # Serial port timeout, in seconds
 
 ser = serial.Serial(PORT_SERIAL, BAUDRATE, timeout=TIMEOUT_SERIAL)
@@ -284,8 +284,25 @@ while OPERATION_LOCALIZE == True:
             g = read_g(g_offset) # Check alignment
             print("Current angle: ", g[0])
             
-            if abs(g[0] - intended_g) > 5: # Straighten as needed
-                Slight_Straighten(g[0], intended_g)
+            # Check if straight
+            angle_diff = g[0] - intended_g
+            if angle_diff > 5:
+                if angle_diff < 180: # Too far right
+                    Slight_Straighten(g[0], intended_g)
+                elif angle_diff > 180: # Too far left
+                    angle_diff = abs(angle_diff - 360)
+                    Slight_Straighten(g[0], intended_g)
+                
+            elif angle_diff < -5: 
+                if angle_diff > -180: # Too far left
+                    angle_diff = abs(angle_diff)
+                    Slight_Straighten(g[0], intended_g)
+                elif angle_diff < -180: # Too far right
+                    angle_diff += 360  
+                    Slight_Straighten(g[0], intended_g)
+            
+            #if abs(g[0] - intended_g) > 5: # Straighten as needed
+            #    Slight_Straighten(g[0], intended_g)
             
             
         # Turn right if space on right side
