@@ -3,7 +3,7 @@ import serial
 
 ### Serial Setup ###
 BAUDRATE = 9600         # Baudrate in bps
-PORT_SERIAL = 'COM7'    # COM port identification
+PORT_SERIAL = 'COM5'    # COM port identification
 TIMEOUT_SERIAL = 1      # Serial port timeout, in seconds
 
 ser = serial.Serial(PORT_SERIAL, BAUDRATE, timeout=TIMEOUT_SERIAL)
@@ -186,185 +186,72 @@ print(readings)
 ### PART 1: WALL FOLLOWING FOR LOCALIZATION ###
 ###############################################
 
-OPERATION_LOCALIZE = True
 
-while OPERATION_LOCALIZE == True:
-    if readings[3]> readings[1]:  #if RIGHT distance > LEFT distance, follow the LEFT wall
-        LZ_R = False # Follow Left Wall
-        LZ_L = True
-        print(LZ_R, LZ_L)
-        print("Following left wall")
+time.sleep(SLEEP_TIME) # delay to not overload with readings
+counter += 1
 
-    else: 
-        LZ_R = True # Follow Right Wall
-        LZ_L = False
-        print(LZ_R, LZ_L)
-        print("Following right wall")
-
-    LZ_L = True
-    LZ_R = False   
-    ### Previous logic sequence with small steps, run this if the rover has a move forward function that stops after a time delay ###
+#Check US Sensor Readings 
+readings = read_us() #readings in format [Back, Left, Front, Right, BlockSensor]
+print(readings)
 
 
-    while LZ_L: 
-        time.sleep(SLEEP_TIME) # delay to not overload with readings
-        counter += 1
-
-        #Check US Sensor Readings 
-        readings = read_us() #readings in format [Back, Left, Front, Right, BlockSensor]
-        print(readings)
-
-
-        # Move forward if space in front
-        if readings[2] > 13: 
-            "Moving forward..."
-            move_forward()
-            time.sleep(1) # Let rover finish moving-- same delay as in drive Arduino
-            g = read_g(g_offset) # Check alignment
-            print("Current angle: ", g[0])
+# Move forward if space in front
+if readings[2] > 13: 
+    "Moving forward..."
+    move_forward()
+    time.sleep(1) # Let rover finish moving-- same delay as in drive Arduino
+    g = read_g(g_offset) # Check alignment
+    print("Current angle: ", g[0])
         
-            if abs(g[0] - intended_g) > 3: # Straighten as needed
-                Slight_Straighten(g[0], intended_g)
+    if abs(g[0] - intended_g) > 3: # Straighten as needed
+        Slight_Straighten(g[0], intended_g)
         
             
-        # Turn right if space on right side
-        elif readings[3] > 13: 
-            print("Turning right...")
-            intended_g += 90 # New intended orientation
+# Turn right if space on right side
+elif readings[3] > 13: 
+    print("Turning right...")
+    intended_g += 90 # New intended orientation
 
-            # Place intended_g within 0-360 range
-            if intended_g >= 360:
-                intended_g += -360 # If new intended_g is 450, it should actually be 90
-            elif intended_g < 0:
-                intended_g += 360
+    # Place intended_g within 0-360 range
+    if intended_g >= 360:
+        intended_g += -360 # If new intended_g is 450, it should actually be 90
+    elif intended_g < 0:
+        intended_g += 360
             
-            move_right_big()
-            time.sleep(SLEEP_TIME)
-            move_right_big()
-            time.sleep(SLEEP_TIME)
-            time.sleep(5)
-            g = read_g(g_offset)
-            print("Current angle: ", g[0])
+    move_right_big()
+    time.sleep(SLEEP_TIME)
+    move_right_big()
+    time.sleep(SLEEP_TIME)
+    time.sleep(5)
+    g = read_g(g_offset)
+    print("Current angle: ", g[0])
             
-            if abs(g[0] - intended_g) > 3: # Straighten as needed
-                Slight_Straighten(g[0], intended_g)
+    if abs(g[0] - intended_g) > 3: # Straighten as needed
+        Slight_Straighten(g[0], intended_g)
             
         
-        # Turn left if space on left side  
-        elif readings[1] > 13:
-            print("Turning left...")
-            intended_g += -90 # New intended orientation
+# Turn left if space on left side  
+elif readings[1] > 13:
+    print("Turning left...")
+    intended_g += -90 # New intended orientation
 
-            # Place intended_g within 0-360 range
-            if intended_g >= 360:
-                intended_g += -360 # If new intended_g is 450, it should actually be 90
-            elif intended_g < 0:
-                intended_g += 360
+    # Place intended_g within 0-360 range
+    if intended_g >= 360:
+        intended_g += -360 # If new intended_g is 450, it should actually be 90
+    elif intended_g < 0:
+        intended_g += 360
             
-            move_left_big()
-            time.sleep(SLEEP_TIME)
-            move_left_big()
-            time.sleep(SLEEP_TIME)
-            time.sleep(5)
-            g = read_g(g_offset)
-            print("Current angle: ", g[0])
+    move_left_big()
+    time.sleep(SLEEP_TIME)
+    move_left_big()
+    time.sleep(SLEEP_TIME)
+    time.sleep(5)
+    g = read_g(g_offset)
+    print("Current angle: ", g[0])
             
-            if abs(g[0] - intended_g) > 3: # Straighten as needed
-                Slight_Straighten(g[0], intended_g)
-        
-        else:
-            print("Ending localization...")
-            OPERATION_LOCALIZE = False # End Phase 1!
+    if abs(g[0] - intended_g) > 3: # Straighten as needed
+        Slight_Straighten(g[0], intended_g)
 
+else:
+    print("Wall-following done!")
     
-    #if : # INSERT CONDITION FOR PROVING SUCCESSFUL LOCALIZATION
-print("Wall following completed.")
-    
-    
-      
-        
-'''
-############################
-### PART 2: BLOCK SEARCH ###
-############################
-
-OPERATION_BLOCKSEARCH = True
-
-while OPERATION_BLOCKSEARCH == True:
-    # Go to loading zone
-    # insert code to get to loading zone
-        
-        
-    # Sense block in front
-    if readings[4] < 3: # If block is sensed in front of gripper
-        transmit('P') # pick up
-        time.sleep(SLEEP_TIME)
-        transmit('P')
-
-    OPERATION_BLOCKSEARCH = False
-
-
-
-
-
-##############################
-### PART 3: BLOCK DROP-OFF ###
-##############################
-
-OPERATION_DROPOFF = True
-
-# Hard-coded paths to each drop-off zone
-B1_Path = []
-B2_Path = []
-B3_Path = []
-B4_Path = []
-
-while OPERATION_DROPOFF == True:
-    # First get to drop-off location
-    At_Dropoff_Loc = False
-    while path != (B1 or B2 or B3 or B4):
-        path = input(Enter a valid drop-off zone (B1, B2, B3, or B4): )
-    
-    if path == 'B1':
-        for i in B1_Path:
-            transmit(B1_Path[i])
-        print("B1 drop-off zone reached!")
-        At_Dropoff_Loc = True
-    
-    elif path == 'B2':
-        for i in B2_Path:
-            transmit(B2_Path[i])
-        print("B2 drop-off zone reached!")
-        At_Dropoff_Loc = True
-    
-    elif path == 'B3':
-        for i in B3_Path:
-            transmit(B3_Path[i])
-        print("B3 drop-off zone reached!")
-        At_Dropoff_Loc = True
-    
-    elif path == 'B4':
-        for i in B4_Path:
-            transmit(B4_Path[i])
-        print("B4 drop-off zone reached!")
-        At_Dropoff_Loc = True
-    
-    #might need code to verify
-    
-    # Drop block
-    if At_Dropoff_Loc == True: # If rover has reached drop-off location
-        transmit('D') # drop off
-        time.sleep(SLEEP_TIME)
-        transmit('D')
-        print("Block delivered!")
-        
-        # Victory twirl!
-        move_backward()
-        move_backward()
-        move_right_big()
-        move_right_big()
-        move_right_big()
-        move_right_big()
-    
-    OPERATION_DROPOFF = False
-'''
