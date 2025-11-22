@@ -113,7 +113,7 @@ def Slight_Straighten(g_current, intended_orientation):
     g_adjusted = [] 
     g_diff = g_current - intended_orientation
     
-    while abs(g_diff) > 5:
+    while abs(g_diff) > 3:
         g_adjusted = read_g(g_offset)
         g_diff = g_adjusted[0] - intended_orientation # Check new difference
         
@@ -137,7 +137,7 @@ def Slight_Straighten(g_current, intended_orientation):
                 move_left_small()
                 print("Adjusting left")
                 
-        time.sleep(0.5) # Let movement finish before taking new g reading
+        time.sleep(1) # Let movement finish before taking new g reading
         g_adjusted = read_g(g_offset)
         new_g_diff = g_adjusted[0] - intended_orientation # Check new difference
         
@@ -232,7 +232,7 @@ counter = 0
 ## Inititalize Gyroscope
 print("Initializing gyroscope...")
 read_g(0) # Give gyroscope 15s to stabilize
-time.sleep(20) 
+time.sleep(10) 
 g = read_g(0)
 g_offset = g[0] # A constant used to zero out initial position
 intended_g = 0 # A changeable constant used to set the way KISI is meant to face; 0, 90, 180, or 270. Starts at "NORTH"
@@ -284,6 +284,7 @@ while OPERATION_LOCALIZE == True:
             g = read_g(g_offset) # Check alignment
             print("Current angle: ", g[0])
             
+            '''
             # Check if straight
             angle_diff = g[0] - intended_g
             if angle_diff > 5:
@@ -300,10 +301,11 @@ while OPERATION_LOCALIZE == True:
                 elif angle_diff < -180: # Too far right
                     angle_diff += 360  
                     Slight_Straighten(g[0], intended_g)
-            
-            #if abs(g[0] - intended_g) > 5: # Straighten as needed
-            #    Slight_Straighten(g[0], intended_g)
-            
+        '''
+        
+            if abs(g[0] - intended_g) > 5: # Straighten as needed
+                Slight_Straighten(g[0], intended_g)
+        
             
         # Turn right if space on right side
         elif readings[3] > 13: 
