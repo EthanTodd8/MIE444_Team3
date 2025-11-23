@@ -28,21 +28,6 @@ def sense_u(world, mask, p, SenVal, heading ):
     u0, u1, u2, u3, u4 = SenVal
     close = [u < threshold for u in [u0, u1, u2, u3]]
     close_count = sum(close)
-
-    
-    # if close_count == 0:
-    #     sensor_zone = 0  # free
-    # elif close_count == 1:
-    #     sensor_zone = 1  #1 side blocked, 3 free
-    # elif ((close[0] and close[1]) or (close[0] and close[2]) or
-    #       (close[2] and close[3]) or (close[1] and close[3])):
-    #     sensor_zone = 2  # adjacent blocking
-    # elif (close[0] and close[3]) or (close[1] and close[2]):
-    #     sensor_zone = 5  # opposite blocking
-    # elif close_count == 3:
-    #     sensor_zone = 3  #3 blocked, 1 free
-    # else:
-    #     sensor_zone = 4  # obstacle (all sides blocked)
     
     if close_count == 0:
         sensor_zone = 0  # free
@@ -124,18 +109,6 @@ def move(p, mask, heading, Move):
     pnew = convolve2d(p, K, mode='same', boundary='fill', fillvalue=0)
 
     print(f"heading: {heading}")
-
-    # # --- DIRECTION HANDLING ---
-    # if Move == 'L':
-    #     heading = (heading + 90) % 360
-        
-    # elif Move == 'R':
-    #     heading = (heading - 90) % 360
-        
-    # elif Move == 'B':
-    #     heading = (heading + 180) % 360
-        
-    # 'F' means forward → no change to heading
     
     #rad = np.deg2rad((heading + 90) % 360)
     rad = np.deg2rad(heading)
@@ -163,36 +136,6 @@ def move(p, mask, heading, Move):
         # move up: shift contents upward
         shifted = np.vstack([np.zeros((1, pnew.shape[1])), pnew[:-1, :]])
         pnew = (1 - step_fraction) * pnew + step_fraction * shifted
-
-    # # Determine movement direction
-    # col_move = np.cos(np.deg2rad(heading))
-    # row_move = np.sin(np.deg2rad(heading))
-
-    # # --- COLUMN (X) MOVEMENT ---
-    # step_fraction = 0.5#rover moves 5 inches = 0.4 of a cell (12.5 inches)
-    
-    # if col_move > 0:
-    #     # Move right
-    #     shifted = np.hstack([np.zeros((pnew.shape[0], 1)), pnew[:, :-1]])
-    #     pnew = (1 - step_fraction) * pnew + step_fraction * shifted
-    # elif col_move < 0:
-    #     # Move left
-    #     shifted = np.hstack([pnew[:, 1:], np.zeros((pnew.shape[0], 1))])
-    #     pnew = (1 - step_fraction) * pnew + step_fraction * shifted
-
-    # # --- ROW (Y) MOVEMENT ---
-    # if row_move < 0:
-    #     # Move up
-    #     shifted = np.vstack([np.zeros((1, pnew.shape[1])), pnew[:-1, :]])
-    #     pnew = (1 - step_fraction) * pnew + step_fraction * shifted
-        
-    # elif row_move > 0:
-    #     # Move down
-    #     shifted = np.vstack([pnew[1:, :], np.zeros((1, pnew.shape[1]))])
-    #     pnew = (1 - step_fraction) * pnew + step_fraction * shifted
-
-    # Apply mask
-    #pnew = pnew * mask
     
     pnew[mask ==4] = 0  # set probabilities to zero where mask indicates obstacle
 
@@ -298,7 +241,7 @@ for k in range(len(m_m)):
     plt.pause(0.5)
 
     # Movement update
-    p, heading = move(p, M, heading, m_m[k])  
+    p, heading = move(p, M, heading, m_m[k]) 
 
 plt.show()
 
