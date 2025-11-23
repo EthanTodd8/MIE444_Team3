@@ -20,11 +20,10 @@ int motB_speed = 42;
 
 char val = 0;  //holds ascii from serial line
 
-
 void setup() {
-  //Serial.begin(9600);
+  Serial.begin(9600);
   myservo.attach(3); 
-  mySerial.begin(9600);
+  //mySerial.begin(9600);
   //Serial.println("KISI Rover Uno is alive!");
 
   pinMode(enA, OUTPUT);
@@ -37,12 +36,19 @@ void setup() {
 }
 
 void loop() {
+
   if (mySerial.available()) { 
     val = mySerial.read();
 
     if (val == 'F') { // drive forward
       MoveForward();
       delay(500);
+      StopMotor();
+      mySerial.println(val);
+    
+    } else if (val == 'f') { // drive forward a bit
+      MoveForward();
+      delay(100);
       StopMotor();
       mySerial.println(val);
 
@@ -52,32 +58,48 @@ void loop() {
       StopMotor();
       mySerial.println("backward");
 
-    } else if (val == 'R') { // drive right
+    } else if (val == 'b') { // drive backward a bit
+      MoveBackward();
+      delay(100);
+      StopMotor();
+      mySerial.println(val);
+
+    } else if (val == 'R') { // turn right
       TurnRight();
       delay(855);
       StopMotor();
       mySerial.println("right");
 
-    } else if (val == 'r'){
+    } else if (val == 'r'){ // turn right a bit
       TurnRight();
       delay(100);
       StopMotor();
 
-    } else if (val == 'L') { // drive left
+    } else if (val == 'L') { // turn left
       TurnLeft();
       delay(725);
       StopMotor();
       mySerial.println("left");
 
-    } else if (val == 'l') { // drive left
+    } else if (val == 'l') { // turn left a bit
       TurnLeft();
       delay(100);
       StopMotor();
       mySerial.println("left");
 
-    } else if (val == 'S') { //Stop Motor
+    } else if (val == 'S') { // stop motor
       StopMotor();
       mySerial.println("stop");
+
+    } else if (val == 'i') { // increase motor B speed
+      motB_speed += 3;
+      mySerial.println("Increased motor speed to");
+      mySerial.print(motB_speed);
+
+    } else if (val == 'd') { // decrease motor B speed
+      motB_speed -= 3;
+      mySerial.println("Decreased motor speed to ");
+      mySerial.print(motB_speed);
     
     } else if (val == 'P') { // pick up block
       CloseGrip();
@@ -88,6 +110,7 @@ void loop() {
       mySerial.println("Grippers opened");
     }
   }
+
 }
 
 
@@ -163,8 +186,8 @@ void CloseGrip() {
 }
 
 void OpenGrip() {
-  for (pos = 180; pos >= 150; pos -= 1) {  
-    myservo.write(pos);               
-    delay(15); 
+  //for (pos = 180; pos >= 150; pos -= 1) {  
+    myservo.write(150); // quickly open to let block slide off              
+    //delay(15); 
   }
 }

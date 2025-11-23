@@ -56,7 +56,7 @@ SoftwareSerial mySerial(A1, A0);  // RX | TX
 
 const int numSamples = 5;
 
-char rover_cmd_array[] = { 'F', 'B', 'L', 'R', 'S', 'l', 'r', 'P', 'D' };
+char rover_cmd_array[] = { 'F', 'B', 'L', 'R', 'S', 'l', 'r', 'f', 'b', 'P', 'D' };
 
 // Helper function: Get the average ping for one sonar
 unsigned long getAveragePing(NewPing &sonar) {
@@ -135,12 +135,6 @@ void loop() {
       BT.print(dist2); BT.print(",");
       BT.print(dist3); BT.print(",");
       BT.print(dist4); BT.print(","); //print order [Back, Left, Front, Right, BlockSensor]
-      // Serial.print("Sensor 0: "); Serial.println(avg0);
-      // Serial.print("Sensor 1: "); Serial.println(avg1);
-      // Serial.print("Sensor 2: "); Serial.println(avg2);
-      // Serial.print("Sensor 3: "); Serial.println(avg3);
-      // Serial.print("Sensor 4: "); Serial.println(avg4);
-      //Serial.print("IR: "); Serial.println(irValue);
 
       BT.println(".");
     }
@@ -186,23 +180,28 @@ void loop() {
     }
 
 
+    // MOTOR SPEED ADJUST
+    else if (ch == 'i') { // increase motor B speed
+      mySerial.write(ch);
+      break;
+      // how do we print the new motor speed to python?
+    }
+
+    else if (ch == 'd') { // decrease motor B speed
+      mySerial.write(ch);
+      break;
+      // how do we print the new motor speed to python?
+    }
+
+    // ALL OTHER COMMANDS
     else {  
-      // Forward rover commands
       for (int i = 0; i < sizeof(rover_cmd_array); i++) {
         if (ch == rover_cmd_array[i]) {
           mySerial.write(ch);
-          //Serial.print("Sent to rover: ");
-          //Serial.println(ch);
           break;
         }
       }
     }
   }
-  /*
-    mySerial.listen();
-   if (mySerial.available()) {
-    char received = mySerial.read();
-    Serial.print("Received from RoverUno: ");
-    Serial.println(received);
-  }*/
+
 }
