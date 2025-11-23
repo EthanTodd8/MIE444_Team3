@@ -3,7 +3,7 @@ import serial
 
 ### Serial Setup ###
 BAUDRATE = 9600         # Baudrate in bps
-PORT_SERIAL = 'COM5'    # COM port identification
+PORT_SERIAL = 'COM6'    # COM port identification
 TIMEOUT_SERIAL = 1      # Serial port timeout, in seconds
 
 ser = serial.Serial(PORT_SERIAL, BAUDRATE, timeout=TIMEOUT_SERIAL)
@@ -57,8 +57,6 @@ def read_g(offset):
             case = False
             for i in range(len((values_str))-1):
                 values.append(float(values_str[i]))
-            while values[0] == 0.0 or values[0] == 180.0:
-                read_g(0)  #recursively call read_g if the reading is 0 or 180 degrees (erroneous)
             if values[0] - offset < 0:
                 values = [values[0] - offset + 360]
             elif values[0] - offset > 360: # this might not be needed since offset vals are always positive
@@ -194,64 +192,73 @@ counter += 1
 readings = read_us() #readings in format [Back, Left, Front, Right, BlockSensor]
 print(readings)
 
+running = True
 
-# Move forward if space in front
-if readings[2] > 13: 
-    "Moving forward..."
-    move_forward()
-    time.sleep(1) # Let rover finish moving-- same delay as in drive Arduino
-    g = read_g(g_offset) # Check alignment
-    print("Current angle: ", g[0])
-        
-    if abs(g[0] - intended_g) > 3: # Straighten as needed
-        Slight_Straighten(g[0], intended_g)
-        
-            
-# Turn right if space on right side
-elif readings[3] > 13: 
-    print("Turning right...")
-    intended_g += 90 # New intended orientation
+while running:
 
-    # Place intended_g within 0-360 range
-    if intended_g >= 360:
-        intended_g += -360 # If new intended_g is 450, it should actually be 90
-    elif intended_g < 0:
-        intended_g += 360
-            
-    move_right_big()
-    time.sleep(SLEEP_TIME)
-    move_right_big()
-    time.sleep(SLEEP_TIME)
-    time.sleep(5)
-    g = read_g(g_offset)
-    print("Current angle: ", g[0])
-            
-    if abs(g[0] - intended_g) > 3: # Straighten as needed
-        Slight_Straighten(g[0], intended_g)
-            
-        
-# Turn left if space on left side  
-elif readings[1] > 13:
-    print("Turning left...")
-    intended_g += -90 # New intended orientation
+    #Check US Sensor Readings 
+    readings = read_us() #readings in format [Back, Left, Front, Right]
+    print(readings)
 
-    # Place intended_g within 0-360 range
-    if intended_g >= 360:
-        intended_g += -360 # If new intended_g is 450, it should actually be 90
-    elif intended_g < 0:
-        intended_g += 360
+    # Move forward if space in front
+    if readings[2] > 20: 
+        print("Moving forward...")
+        move_forward()
+        time.sleep(1) # Let rover finish moving-- same delay as in drive Arduino
+        g = read_g(g_offset) # Check alignment
+        while g[0] == 0.0 or g[0] == 180.0:
+            g = read_g(0)  #recursively call read_g if the reading is 0 or 180 degrees (erroneous)
+        print("Current angle: ", g[0])
             
-    move_left_big()
-    time.sleep(SLEEP_TIME)
-    move_left_big()
-    time.sleep(SLEEP_TIME)
-    time.sleep(5)
-    g = read_g(g_offset)
-    print("Current angle: ", g[0])
+        if abs(g[0] - intended_g) > 3: # Straighten as needed
+            Slight_Straighten(g[0], intended_g)
             
-    if abs(g[0] - intended_g) > 3: # Straighten as needed
-        Slight_Straighten(g[0], intended_g)
+                
+    # Turn right if space on right side
+    elif readings[3] > 13: 
+        print("Turning right...")
+        intended_g += 90 # New intended orientation
 
-else:
-    print("Wall-following done!")
+        # Place intended_g within 0-360 range
+        if intended_g >= 360:
+            intended_g += -360 # If new intended_g is 450, it should actually be 90
+        elif intended_g < 0:
+            intended_g += 360
+                
+        move_right_big()
+        time.sleep(SLEEP_TIME)
+        time.sleep(5)
+        g = read_g(g_offset)
+        while g[0] == 0.0 or g[0] == 180.0:
+            g = read_g(0)  #recursively call read_g if the reading is 0 or 180 degrees (erroneous)
+        print("Current angle: ", g[0])
+                
+        if abs(g[0] - intended_g) > 3: # Straighten as needed
+            Slight_Straighten(g[0], intended_g)
+                
+            
+    # Turn left if space on left side  
+    elif readings[1] > 13:
+        print("Turning left...")
+        intended_g += -90 # New intended orientation
+
+        # Place intended_g within 0-360 range
+        if intended_g >= 360:
+            intended_g += -360 # If new intended_g is 450, it should actually be 90
+        elif intended_g < 0:
+            intended_g += 360
+                
+        move_left_big()
+        time.sleep(SLEEP_TIME)
+        time.sleep(5)
+        g = read_g(g_offset)
+        while g[0] == 0.0 or g[0] == 180.0:
+            g = read_g(0)  #recursively call read_g if the reading is 0 or 180 degrees (erroneous)
+        print("Current angle: ", g[0])
+                
+        if abs(g[0] - intended_g) > 3: # Straighten as needed
+            Slight_Straighten(g[0], intended_g)
+
+    else:
+        print("Wall-following done!")
     
