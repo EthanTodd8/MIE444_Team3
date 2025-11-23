@@ -162,7 +162,7 @@ def Slight_Straighten(g_current, intended_orientation):
 ###################
 
 ## Time & Counter Set-Up
-SLEEP_TIME = 0.03
+SLEEP_TIME = 1
 counter = 0
 
 ## Inititalize Gyroscope
@@ -183,8 +183,19 @@ print(readings)
 ###############################################
 ### PART 1: WALL FOLLOWING FOR LOCALIZATION ###
 ###############################################
+LZ_L = True
+
+while LZ_L: 
+
+    time.sleep(SLEEP_TIME) # delay to not overload with readings
+    counter += 1
+
+    #Check US Sensor Readings 
+    readings = read_us() #readings in format [Back, Left, Front, Right, BlockSensor]
+    print(readings)
 
 
+<<<<<<< HEAD
 time.sleep(SLEEP_TIME) # delay to not overload with readings
 counter += 1
 
@@ -259,6 +270,65 @@ while running:
         if abs(g[0] - intended_g) > 3: # Straighten as needed
             Slight_Straighten(g[0], intended_g)
 
+=======
+    # Move forward if space in front
+    if readings[2] > 20: 
+        "Moving forward..."
+        move_forward()
+        time.sleep(1) # Let rover finish moving-- same delay as in drive Arduino
+        g = read_g(g_offset) # Check alignment
+        print("Current angle: ", g[0])
+            
+        if abs(g[0] - intended_g) > 3: # Straighten as needed
+            Slight_Straighten(g[0], intended_g)
+            
+                
+    # Turn right if space on right side
+    elif readings[3] > 20: 
+        print("Turning right...")
+        intended_g += 90 # New intended orientation
+
+        # Place intended_g within 0-360 range
+        if intended_g >= 360:
+            intended_g += -360 # If new intended_g is 450, it should actually be 90
+        elif intended_g < 0:
+            intended_g += 360
+                
+        move_right_big()
+        time.sleep(SLEEP_TIME)
+        move_right_big()
+        time.sleep(SLEEP_TIME)
+        time.sleep(5)
+        g = read_g(g_offset)
+        print("Current angle: ", g[0])
+                
+        if abs(g[0] - intended_g) > 3: # Straighten as needed
+            Slight_Straighten(g[0], intended_g)
+                
+            
+    # Turn left if space on left side  
+    elif readings[1] > 20:
+        print("Turning left...")
+        intended_g += -90 # New intended orientation
+
+        # Place intended_g within 0-360 range
+        if intended_g >= 360:
+            intended_g += -360 # If new intended_g is 450, it should actually be 90
+        elif intended_g < 0:
+            intended_g += 360
+                
+        move_left_big()
+        time.sleep(SLEEP_TIME)
+        move_left_big()
+        time.sleep(SLEEP_TIME)
+        time.sleep(5)
+        g = read_g(g_offset)
+        print("Current angle: ", g[0])
+                
+        if abs(g[0] - intended_g) > 3: # Straighten as needed
+            Slight_Straighten(g[0], intended_g)
+
+>>>>>>> adfb602109fd66b0f60a3d7f22e16653e05b87d6
     else:
         print("Wall-following done!")
     
