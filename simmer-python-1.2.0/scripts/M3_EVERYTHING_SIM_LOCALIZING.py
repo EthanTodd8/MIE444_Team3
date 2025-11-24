@@ -665,7 +665,7 @@ while OPERATION_LOCALIZE == True:
         # [Back, Left, Front, Right, BlockSensor]
         
         # If facing right --> left side short
-        if readings[0] > 20 and readings[1] > 7 and readings[2] > 20 and readings[3] > 20:
+        if readings[0] > 20 and readings[1] > 10 and readings[2] > 20 and readings[3] > 20:
             print("Inside zero position!")
             print("Ending wall-following...")
             LZ_L = False # End this loop
@@ -673,7 +673,7 @@ while OPERATION_LOCALIZE == True:
             OPERATION_BLOCKSEARCH = True # Begin Phase 2!
         
         # If facing left --> right side short
-        elif readings[0] > 20 and readings[1] > 20 and readings[2] > 20 and readings[3] > 7:
+        elif readings[0] > 20 and readings[1] > 20 and readings[2] > 20 and readings[3] > 10:
             print("Inside zero position!")
             print("Ending wall-following...")
             LZ_L = False # End this loop
@@ -681,7 +681,7 @@ while OPERATION_LOCALIZE == True:
             OPERATION_BLOCKSEARCH = True # Begin Phase 2!
         
         # If facing up --> front short
-        elif readings[0] > 20 and readings[1] > 20 and readings[2] > 7 and readings[3] > 20:
+        elif readings[0] > 20 and readings[1] > 20 and readings[2] > 10 and readings[3] > 20:
             print("Inside zero position!")
             print("Ending wall-following...")
             LZ_L = False # End this loop
@@ -689,7 +689,7 @@ while OPERATION_LOCALIZE == True:
             OPERATION_BLOCKSEARCH = True # Begin Phase 2!
             
         # If facing down --> back short
-        elif readings[0] > 7 and readings[1] > 20 and readings[2] > 20 and readings[3] > 20:
+        elif readings[0] > 10 and readings[1] > 20 and readings[2] > 20 and readings[3] > 20:
             print("Inside zero position!")
             print("Ending wall-following...")
             LZ_L = False # End this loop
@@ -711,13 +711,7 @@ print("PHASE 2: BLOCK SEARCH")
 
 # First go to loading zone entry from zero position
 # Change orientation to face left-- right side short
-
-readings = read_us()
-
-while readings[3] < 7 or readings[3] > 20:
-    readings = read_us()
-    print(readings)
-    
+while readings[3] < 10 or readings[3] > 20:
     Turn_Left_90(intended_g)
             
     intended_g += -90 # Update intended orientation
@@ -726,8 +720,6 @@ while readings[3] < 7 or readings[3] > 20:
     elif intended_g < 0:
         intended_g += 360
     print("New intended orientation: ", intended_g)
-    
-    readings = read_us()
 
 print("Now exiting zero position through left side.")
 

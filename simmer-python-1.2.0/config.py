@@ -44,7 +44,7 @@ frame_end = ']'
 round_digits = 3
 
 # Block information
-block_position = [42, 5]        # Block starting location
+block_position = [18, 18]        # Block starting location
 block_rotation = 0              # Block rotation (deg)
 block_size = 3                  # Block side length in inches
 
@@ -137,7 +137,7 @@ w0_info = {
     'position': [0, 0],
     'rotation': 0,
     'visible': False,
-    'velocity': [0, 6],
+    'velocity': [0, 10],
     'ang_velocity': 0,
     'motors': [motors['m0'], motors['m1']],
     'motor_direction': [1, 1],
