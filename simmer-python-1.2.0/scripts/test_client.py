@@ -239,7 +239,7 @@ else:
 
 
 ############## Main section for the communication client ##############
-RUN_COMMUNICATION_CLIENT = False # If true, run this. If false, skip it
+RUN_COMMUNICATION_CLIENT = True # If true, run this. If false, skip it
 while RUN_COMMUNICATION_CLIENT:
     # Input a command
     cmd = input('Type in a string to send: ')

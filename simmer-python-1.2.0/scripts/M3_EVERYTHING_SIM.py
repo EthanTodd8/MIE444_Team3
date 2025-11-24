@@ -561,7 +561,7 @@ readings = read_us() # [Back, Left, Front, Right, BlockSensor]
 print(readings)
 
 
-
+'''
 ###############################################
 ### PART 1: WALL FOLLOWING FOR LOCALIZATION ###
 ###############################################
@@ -757,9 +757,10 @@ while At_Loading_Zone == False:
     Move_Fwd_Until(24)
     
     At_Loading_Zone = True
+    print("At loading zone!")
     
     
-
+'''
 
 #Loading Zone + Block Search Code
 #Arrives at loading zone 
@@ -773,43 +774,60 @@ print("Reference orientation: ", g_ref[0])
 BLOCK_DETECTED = False
 Zone_1 = False 
 
+At_Loading_Zone = True
+OPERATION_BLOCKSEARCH = True
 
 while At_Loading_Zone == True and OPERATION_BLOCKSEARCH == True:
     #time.sleep(SLEEP_TIME) #sleep
+    print("Starting scan for block...")
     
     #Check US Sensor Readings 
     readings = read_us() #readings in format [Back, Left, Front, Right, BlockSensor]
     print(readings)
     
-    if readings[3] >= 20: #if front is free
-        move_fwd_small()
+    if readings[2] >= 10: #if front is free
+        move_forward()
         Zone_1 = True
     else:
-        print('front is not free')
+        print('Front is not free.')
         break
 
     while Zone_1 and not BLOCK_DETECTED:
         g_now = read_g(g_offset)
         #turning right
         g_right = g_now[0] + 90 #or 60 depending on gyro reading 
+        if g_right >= 360: # Place intended_g within 0-360 range
+            g_right += -360 # If new intended_g is 450, it should actually be 90
+        elif g_right < 0:
+            g_right += 360
         
-        while True:
+        Zone_1_CheckR = True
+        while Zone_1_CheckR and abs (g_now[0]- g_right) >= 5:
+            g_now = read_g(g_offset)
+            
+            print("Scanning right...")
             move_right_small()                # small incremental turn
-            time.sleep(0.2)
+            time.sleep(SLEEP_TIME)
             readings = read_us()             # read DURING rotation
             if (readings[2] - readings[4]) >= 10:
                 BLOCK_DETECTED = True
                 print("BLOCK DETECTED")
+                Zone_1_CheckR = False
                 break
             
-            g_now = read_g(g_offset)
-            if abs (g_now[0]- g_right) <= 5:
-                break
-            
+        
+        Zone_1_CheckL = True
+        
         g_now = read_g(g_offset)
         #Turning left from right
         g_left= g_now[0] - 180  
-        while True:
+        if g_left >= 360: # Place intended_g within 0-360 range
+            g_left += -360 # If new intended_g is 450, it should actually be 90
+        elif g_left < 0:
+            g_left += 360
+            
+        while Zone_1_CheckL and abs (g_now[0]- g_left) >= 5:
+            print("Scanning left...")
             move_left_small()                # small incremental turn
             time.sleep(0.2)
             readings = read_us()             # read DURING rotation
@@ -818,15 +836,18 @@ while At_Loading_Zone == True and OPERATION_BLOCKSEARCH == True:
             if (readings[2] - readings[4]) >= 10:
                 BLOCK_DETECTED = True
                 print("Block detected nearby!")
+                Zone_1_CheckL = False
                 break
             
-            g_now = read_g(g_offset)
-            if abs (g_now[0]- g_left) <= 5:
-                break
+            #g_now = read_g(g_offset)
+        
+        if BLOCK_DETECTED == False:
+            Zone_1 = False
+            LOADING_ZONE_EXIT = True
+
             
     
-if BLOCK_DETECTED:
-    while True: 
+    while BLOCK_DETECTED:
         readings = read_us() 
         sense_diff = readings[2] - readings[4] #distance between the block and the nearesrt wall in front
         Move_Fwd_Until(sense_diff)#moves forward until the front sensor 'the block difference' away from the wall
@@ -835,11 +856,12 @@ if BLOCK_DETECTED:
         pickup() 
         print("Block picked successfully!")
         LOADING_ZONE_EXIT = True 
-else: 
-    print('No block detected')
+    
+    
+    if BLOCK_DETECTED == False:
+        print('No block detected')
 
 
-LOADING_ZONE_EXIT = True
  #turn back to ref orientation
 while LOADING_ZONE_EXIT: 
     g_now = read_g(g_offset)
@@ -880,9 +902,7 @@ while OPERATION_DROPOFF == True:
     Goto_Zero = True # run path to zero position
     print("Going to zero position...")
 
-    if Goto_Zero == True:
-        centered = False
-        
+    while Goto_Zero == True:        
         Move_Fwd_Until()
         
         Turn_Right_90(intended_g)
@@ -905,134 +925,133 @@ while OPERATION_DROPOFF == True:
     
         Move_Fwd_Until(26) # Until 2 blocks away (~24'') from wall
         
-        # Perfectly center in zero position
-        while centered == False:
-            ctr_check = read_us() # [Back, Left, Front, Right, BlockSensor]
-            print(ctr_check)
+        
+        # END ONCE IN ZERO POSITION
+        # [Back, Left, Front, Right, BlockSensor]
+        
+        # If facing right --> left side short
+        if readings[0] > 20 and readings[1] > 7 and readings[2] > 20 and readings[3] > 20:
+            print("Inside zero position!")
+            Goto_Zero = False 
+        
+        # If facing left --> right side short
+        elif readings[0] > 20 and readings[1] > 20 and readings[2] > 20 and readings[3] > 7:
+            print("Inside zero position!")
+            Goto_Zero = False 
+        
+        # If facing up --> front short
+        elif readings[0] > 20 and readings[1] > 20 and readings[2] > 7 and readings[3] > 20:
+            print("Inside zero position!")
+            Goto_Zero = False 
             
-            # Check if all sides have desired readings
-            horiz_diff = ctr_check[0] - ctr_check[2]
-            if ctr_check[1] > 12 and ctr_check[3] > 20 and abs(horiz_diff) < 10:
-                print("Inside zero position!")
-                centered = True
-                Goto_Zero = False
-            elif horiz_diff > 10: # Too far right
-                move_bwd_small()
-                if abs(g[0] - intended_g) > 3: # Straighten as needed
-                    Straighten(g[0], intended_g)
-            elif horiz_diff < -10: # Too far left
-                move_fwd_small()
-                if abs(g[0] - intended_g) > 3: # Straighten as needed
-                    Straighten(g[0], intended_g)
-            else: # sides are closed in
-                move_bwd_small()
-                if abs(g[0] - intended_g) > 3: # Straighten as needed
-                    Straighten(g[0], intended_g)
+        # If facing down --> back short
+        elif readings[0] > 7 and readings[1] > 20 and readings[2] > 20 and readings[3] > 20:
+            print("Inside zero position!")
+            Goto_Zero = False 
+        
                             
-        
+   
 
-Goto_Zero = False        
+    if Goto_Zero == False:
+        # ASSUMING WE START FROM MIDDLE OF "ZERO POSITION" FACING RIGHT
+        At_Dropoff_Loc = False
+        path = input("Enter a valid drop-off zone (B1, B2, B3, or B4): ")
 
-if Goto_Zero == False:
-    # ASSUMING WE START FROM MIDDLE OF "ZERO POSITION" FACING RIGHT
-    At_Dropoff_Loc = False
-    path = input("Enter a valid drop-off zone (B1, B2, B3, or B4): ")
-
-    if path == 'B1':
-        Turn_Left_90(intended_g)
-        intended_g += -90 # Update intended orientation
-        if intended_g >= 360: # Place intended_g within 0-360 range
-            intended_g += -360 # If new intended_g is 450, it should actually be 90
-        elif intended_g < 0:
-            intended_g += 360
-        print("New intended orientation: ", intended_g)
-    
-        Move_Fwd_Until()
-        At_Dropoff_Loc = True
-                
-    elif path == 'B2':
-        Move_Fwd_Until()
+        if path == 'B1':
+            Turn_Left_90(intended_g)
+            intended_g += -90 # Update intended orientation
+            if intended_g >= 360: # Place intended_g within 0-360 range
+                intended_g += -360 # If new intended_g is 450, it should actually be 90
+            elif intended_g < 0:
+                intended_g += 360
+            print("New intended orientation: ", intended_g)
         
-        Turn_Left_90(intended_g)
-        intended_g += -90 # Update intended orientation
-        if intended_g >= 360: # Place intended_g within 0-360 range
-            intended_g += -360 # If new intended_g is 450, it should actually be 90
-        elif intended_g < 0:
-            intended_g += 360
-        print("New intended orientation: ", intended_g)
-        
-        Move_Fwd_Until()
-        At_Dropoff_Loc = True
-        
-    elif path == 'B3':
-        Move_Fwd_Until()
-        
-        Turn_Right_90(intended_g)
-        intended_g += 90 # Update intended orientation
-        if intended_g >= 360: # Place intended_g within 0-360 range
-            intended_g += -360 # If new intended_g is 450, it should actually be 90
-        elif intended_g < 0:
-            intended_g += 360
-        print("New intended orientation: ", intended_g)
-        
-        Move_Fwd_Until()
-        At_Dropoff_Loc = True
-                
-    elif path == 'B4':
-        Turn_Right_90(intended_g)
-        intended_g += 90 # Update intended orientation
-        if intended_g >= 360: # Place intended_g within 0-360 range
-            intended_g += -360 # If new intended_g is 450, it should actually be 90
-        elif intended_g < 0:
-            intended_g += 360
-        print("New intended orientation: ", intended_g)
-        
-        Move_Fwd_Until()
-        
-        Turn_Right_90(intended_g)
-        intended_g += 90 # Update intended orientation
-        if intended_g >= 360: # Place intended_g within 0-360 range
-            intended_g += -360 # If new intended_g is 450, it should actually be 90
-        elif intended_g < 0:
-            intended_g += 360
-        print("New intended orientation: ", intended_g)
-        
-        Move_Fwd_Until(26) # Until 2 blocks away (~24'') from wall
-        
-        Turn_Right_90(intended_g)
-        intended_g += 90 # Update intended orientation
-        if intended_g >= 360: # Place intended_g within 0-360 range
-            intended_g += -360 # If new intended_g is 450, it should actually be 90
-        elif intended_g < 0:
-            intended_g += 360
-        print("New intended orientation: ", intended_g)
-        
-        Move_Fwd_Until()
-        At_Dropoff_Loc = True
-
-
-    # If at drop-off, drop block and verify
-    if At_Dropoff_Loc == True:
-        print("Drop-off zone ", path, " reached!")  
-        reading_before = read_us()  
-        dropoff()
-        
-        # do a lil shimmy to shake block off, in case
-        for t in range(5):
-            move_left_small()
-            move_right_small() 
-        
-        # Confirm block is released
-        move_backward()
-        move_backward()
-        reading_after = read_us()
-        if abs(reading_after[2] - reading_before[2]) > 12:  
-            print("Block delivered!")
+            Move_Fwd_Until()
+            At_Dropoff_Loc = True
+                    
+        elif path == 'B2':
+            Move_Fwd_Until()
             
-            # Victory twirl!
-            move_right_big()
-            move_right_big()
-            move_right_big()
-            move_right_big()
-        
-            OPERATION_DROPOFF = False
+            Turn_Left_90(intended_g)
+            intended_g += -90 # Update intended orientation
+            if intended_g >= 360: # Place intended_g within 0-360 range
+                intended_g += -360 # If new intended_g is 450, it should actually be 90
+            elif intended_g < 0:
+                intended_g += 360
+            print("New intended orientation: ", intended_g)
+            
+            Move_Fwd_Until()
+            At_Dropoff_Loc = True
+            
+        elif path == 'B3':
+            Move_Fwd_Until()
+            
+            Turn_Right_90(intended_g)
+            intended_g += 90 # Update intended orientation
+            if intended_g >= 360: # Place intended_g within 0-360 range
+                intended_g += -360 # If new intended_g is 450, it should actually be 90
+            elif intended_g < 0:
+                intended_g += 360
+            print("New intended orientation: ", intended_g)
+            
+            Move_Fwd_Until()
+            At_Dropoff_Loc = True
+                    
+        elif path == 'B4':
+            Turn_Right_90(intended_g)
+            intended_g += 90 # Update intended orientation
+            if intended_g >= 360: # Place intended_g within 0-360 range
+                intended_g += -360 # If new intended_g is 450, it should actually be 90
+            elif intended_g < 0:
+                intended_g += 360
+            print("New intended orientation: ", intended_g)
+            
+            Move_Fwd_Until()
+            
+            Turn_Right_90(intended_g)
+            intended_g += 90 # Update intended orientation
+            if intended_g >= 360: # Place intended_g within 0-360 range
+                intended_g += -360 # If new intended_g is 450, it should actually be 90
+            elif intended_g < 0:
+                intended_g += 360
+            print("New intended orientation: ", intended_g)
+            
+            Move_Fwd_Until(26) # Until 2 blocks away (~24'') from wall
+            
+            Turn_Right_90(intended_g)
+            intended_g += 90 # Update intended orientation
+            if intended_g >= 360: # Place intended_g within 0-360 range
+                intended_g += -360 # If new intended_g is 450, it should actually be 90
+            elif intended_g < 0:
+                intended_g += 360
+            print("New intended orientation: ", intended_g)
+            
+            Move_Fwd_Until()
+            At_Dropoff_Loc = True
+
+
+        # If at drop-off, drop block and verify
+        if At_Dropoff_Loc == True:
+            print("Drop-off zone ", path, " reached!")  
+            reading_before = read_us()  
+            dropoff()
+            
+            # do a lil shimmy to shake block off, in case
+            for t in range(5):
+                move_left_small()
+                move_right_small() 
+            
+            # Confirm block is released
+            move_backward()
+            move_backward()
+            reading_after = read_us()
+            if abs(reading_after[2] - reading_before[2]) > 12:  
+                print("Block delivered!")
+                
+                # Victory twirl!
+                move_right_big()
+                move_right_big()
+                move_right_big()
+                move_right_big()
+            
+                OPERATION_DROPOFF = False
