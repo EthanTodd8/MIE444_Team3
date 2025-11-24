@@ -1033,7 +1033,9 @@ while OPERATION_DROPOFF == True:
 
     # ASSUMING WE START FROM MIDDLE OF "ZERO POSITION" FACING RIGHT
     At_Dropoff_Loc = False
-    path = input("Enter a valid drop-off zone (B1, B2, B3, or B4): ")
+    
+    if Goto_Zero == False:
+        path = input("Enter a valid drop-off zone (B1, B2, B3, or B4): ")
 
     if path == 'B1':
         # Step 1: Turn left

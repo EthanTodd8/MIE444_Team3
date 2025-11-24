@@ -13,7 +13,7 @@ int enB = 9;
 int in1B = 10;
 int in2B = 11;
 //Servo Motor
-int pos = 150; // variable to store servo position
+int pos = 130; // variable to store servo position
 
 int motA_speed = 52;
 int motB_speed = 42;
@@ -103,11 +103,14 @@ void loop() {
       mySerial.print(motB_speed);
     
     } else if (val == 'P') { // pick up block
-      CloseGrip();
+      for (pos = 130; pos <= 180; pos += 1) { 
+        myservo.write(pos);               
+        delay(15); 
+      }
       mySerial.println("Grippers closed");
 
     } else if (val == 'D') { // drop off block
-      OpenGrip();
+      myservo.write(130); // quickly open to let block slide off              
       mySerial.println("Grippers opened");
     }
   }
@@ -177,18 +180,3 @@ void TurnRight() {
   analogWrite(enB, motB_speed);
 }
 
-
-// GRIPPERS
-void CloseGrip() {
-  for (pos = 150; pos <= 180; pos += 1) { 
-    myservo.write(pos);               
-    delay(15); 
-  }
-}
-
-void OpenGrip() {
-  //for (pos = 0; pos >= 60; pos -= 1) {  
-    myservo.write(150); // quickly open to let block slide off              
-    //delay(15); 
-  //}
-}
