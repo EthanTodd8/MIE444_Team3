@@ -380,9 +380,15 @@ def Straighten(g_current, intended_orientation):
 
 
 
-def Move_Fwd_Until(desired_dist_from_wall = 10): 
+def Move_Fwd_Until(desired_dist_from_wall = 5): 
     '''Function to keep moving forward until a desired distance from a wall is met'''
-    while readings[2] > desired_dist_from_wall + 10: 
+    readings = read_us()
+    print(readings)
+    
+    while readings[2] > desired_dist_from_wall + 5: 
+        readings = read_us()
+        print(readings)
+    
         print("Moving forward...")
         move_forward()
         time.sleep(SLEEP_TIME) # Let rover finish moving-- same delay as in drive Arduino
@@ -395,9 +401,14 @@ def Move_Fwd_Until(desired_dist_from_wall = 10):
         if abs(g[0] - intended_g) > 3: # Straighten as needed
             Straighten(g[0], intended_g)
             
+        readings = read_us()
+            
             
     # Move a bit forward if close to wall but still space
-    while readings[2] < desired_dist_from_wall + 10 and readings[2] > desired_dist_from_wall: 
+    while readings[2] < desired_dist_from_wall + 5 and readings[2] > desired_dist_from_wall: 
+        readings = read_us()
+        print(readings)
+    
         print("Moving forward a little bit...")
         move_fwd_small()
         time.sleep(0.5) # Let rover finish moving-- same delay as in drive Arduino
@@ -408,21 +419,32 @@ def Move_Fwd_Until(desired_dist_from_wall = 10):
             
         if abs(g[0] - intended_g) > 3: # Straighten as needed
             Straighten(g[0], intended_g)
+            
+        readings = read_us()
+        
                 
                 
     # Move a bit backward if too close to wall
-    while readings[2] < desired_dist_from_wall - 5: 
-        print("Moving backward a little bit...")
-        move_bwd_small()
-        time.sleep(0.5) # Let rover finish moving 
-        g = read_g(g_offset) # Check alignment
-        while g[0] == 0.0 or g[0] == 180.0:
-            g = read_g(g_offset)  #recursively call read_g if the reading is 0 or 180 degrees (erroneous)
-        print("Current angle: ", g[0])
+    if readings[2] <= desired_dist_from_wall: 
+        while readings[2] < desired_dist_from_wall - 3: 
+            readings = read_us()
+            print(readings)
+        
+            print("Moving backward a little bit...")
+            move_bwd_small()
+            time.sleep(0.5) # Let rover finish moving 
+            g = read_g(g_offset) # Check alignment
+            while g[0] == 0.0 or g[0] == 180.0:
+                g = read_g(g_offset)  #recursively call read_g if the reading is 0 or 180 degrees (erroneous)
+            print("Current angle: ", g[0])
+                
+            if abs(g[0] - intended_g) > 3: # Straighten as needed
+                Straighten(g[0], intended_g)
             
-        if abs(g[0] - intended_g) > 3: # Straighten as needed
-            Straighten(g[0], intended_g)
-            
+            readings = read_us()
+    
+        print("Within desired wall distance.")
+                
     print("Wall encountered!")  
     
 
@@ -539,7 +561,7 @@ readings = read_us() # [Back, Left, Front, Right, BlockSensor]
 print(readings)
 
 
-
+'''
 ###############################################
 ### PART 1: WALL FOLLOWING FOR LOCALIZATION ###
 ###############################################
@@ -737,10 +759,10 @@ while LOADING_ZONE_EXIT:
         LOADING_ZONE_EXIT = False
         OPERATION_BLOCKSEARCH = False
         OPERATION_DROPOFF = True
-        
+'''      
 
 
-
+OPERATION_DROPOFF = True
 
 ##############################
 ### PART 3: BLOCK DROP-OFF ###

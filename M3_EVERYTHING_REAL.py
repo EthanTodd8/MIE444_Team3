@@ -333,6 +333,9 @@ def Straighten(g_current, intended_orientation):
 
 def Move_Fwd_Until(desired_dist_from_wall = 10): 
     '''Function to keep moving forward until a desired distance from a wall is met'''
+    readings = read_us()
+    print(readings)
+    
     while readings[2] > desired_dist_from_wall + 10: 
         print("Moving forward...")
         move_forward()

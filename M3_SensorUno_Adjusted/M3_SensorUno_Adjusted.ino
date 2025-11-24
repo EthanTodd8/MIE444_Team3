@@ -56,7 +56,7 @@ SoftwareSerial mySerial(A1, A0);  // RX | TX
 
 const int numSamples = 5;
 
-char rover_cmd_array[] = { 'F', 'B', 'L', 'R', 'S', 'l', 'r', 'f', 'b', 'P', 'D' };
+char rover_cmd_array[] = { 'F', 'B', 'L', 'R', 'S', 'l', 'r', 'f', 'b', 'i', 'd', 'P', 'D' };
 
 // Helper function: Get the average ping for one sonar
 unsigned long getAveragePing(NewPing &sonar) {
@@ -179,19 +179,6 @@ void loop() {
         #endif
     }
 
-
-    // MOTOR SPEED ADJUST
-    else if (ch == 'i') { // increase motor B speed
-      mySerial.write(ch);
-      break;
-      // how do we print the new motor speed to python?
-    }
-
-    else if (ch == 'd') { // decrease motor B speed
-      mySerial.write(ch);
-      break;
-      // how do we print the new motor speed to python?
-    }
 
     // ALL OTHER COMMANDS
     else {  

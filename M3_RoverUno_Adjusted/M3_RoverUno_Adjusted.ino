@@ -187,8 +187,8 @@ void CloseGrip() {
 }
 
 void OpenGrip() {
-  //for (pos = 180; pos >= 150; pos -= 1) {  
+  //for (pos = 0; pos >= 60; pos -= 1) {  
     myservo.write(150); // quickly open to let block slide off              
     //delay(15); 
-  }
+  //}
 }
