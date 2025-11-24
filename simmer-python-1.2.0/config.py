@@ -137,7 +137,7 @@ w0_info = {
     'position': [0, 0],
     'rotation': 0,
     'visible': False,
-    'velocity': [0, 2],
+    'velocity': [0, 6],
     'ang_velocity': 0,
     'motors': [motors['m0'], motors['m1']],
     'motor_direction': [1, 1],
@@ -244,7 +244,7 @@ u3_info = {
 u4_info = {
     'id': 'u1',
     'position': [0, 3],
-    'height': 2,
+    'height': 0.5,
     'rotation': 0,
     'error': 0.02,
     'outline': [
@@ -263,31 +263,9 @@ g0_info = {
     'rotation': 0,
     'error': 0.02,
     #'bias': 0.1,
-    'visible': False
+    'visible': True
 }
 
-# c0_info = {
-#     'id': 'c0',
-#     'position': [0, 0],
-#     'rotation': 0,
-#     'error': 0.02,
-#     'bias': 0.1,
-#     'visible': False
-# }
-
-i0_info = {
-    'id': 'i0',
-    'position': [0, -1],
-    'height': 1.5,
-    'rotation': 0,
-    'fov': 60,
-    'threshold': 0.7,
-    'error': 0.05,
-    'bias': 0.1,
-    'color': (127, 127, 127),
-    'visible': True,
-    'visible_measurement': True
-}
 
 sensors = {
     'u0': Ultrasonic(u0_info),
@@ -295,10 +273,7 @@ sensors = {
     'u2': Ultrasonic(u2_info),
     'u3': Ultrasonic(u3_info),
     'u4': Ultrasonic(u4_info),
-    
     'g0': Gyroscope(g0_info),
-    # 'c0': Compass(c0_info),
-    'i0': Infrared(i0_info)
 }
 
 
