@@ -594,12 +594,12 @@ while OPERATION_LOCALIZE == True:
         counter += 1
 
         #Check US Sensor Readings 
-        readings = read_us() #readings in format [Back, Left, Front, Right, BlockSensor]
+        readings = read_us() # [Back, Left, Front, Right, BlockSensor]
         print(readings)
 
 
         # Move forward if space in front
-        if readings[2] > 6: 
+        if readings[2] > 5: 
             print("Moving forward...")
             move_forward()
             time.sleep(1) # Let rover finish moving-- same delay as in drive Arduino
@@ -637,13 +637,66 @@ while OPERATION_LOCALIZE == True:
                 intended_g += 360
             print("New intended orientation: ", intended_g)
         
-        else:
+        else: # If cornered in, turn around
+            print("No way forward. Turn around.")
+            # Turn once
+            Turn_Left_90(intended_g)
+            
+            intended_g += -90 # Update intended orientation
+            if intended_g >= 360: # Place intended_g within 0-360 range
+                intended_g += -360 # If new intended_g is 450, it should actually be 90
+            elif intended_g < 0:
+                intended_g += 360
+            print("New intended orientation: ", intended_g)
+            
+            # Turn once more
+            Turn_Left_90(intended_g)
+            
+            intended_g += -90 # Update intended orientation
+            if intended_g >= 360: # Place intended_g within 0-360 range
+                intended_g += -360 # If new intended_g is 450, it should actually be 90
+            elif intended_g < 0:
+                intended_g += 360
+            print("New intended orientation: ", intended_g)
+
+            
+            
+        # END WALL FOLLOWING ONCE IN ZERO POSITION
+        # [Back, Left, Front, Right, BlockSensor]
+        
+        # If facing right --> left side short
+        if readings[0] > 20 and readings[1] > 10 and readings[2] > 20 and readings[3] > 20:
+            print("Inside zero position!")
             print("Ending wall-following...")
             LZ_L = False # End this loop
             OPERATION_LOCALIZE = False # End Phase 1!
             OPERATION_BLOCKSEARCH = True # Begin Phase 2!
+        
+        # If facing left --> right side short
+        elif readings[0] > 20 and readings[1] > 20 and readings[2] > 20 and readings[3] > 10:
+            print("Inside zero position!")
+            print("Ending wall-following...")
+            LZ_L = False # End this loop
+            OPERATION_LOCALIZE = False # End Phase 1!
+            OPERATION_BLOCKSEARCH = True # Begin Phase 2!
+        
+        # If facing up --> front short
+        elif readings[0] > 20 and readings[1] > 20 and readings[2] > 10 and readings[3] > 20:
+            print("Inside zero position!")
+            print("Ending wall-following...")
+            LZ_L = False # End this loop
+            OPERATION_LOCALIZE = False # End Phase 1!
+            OPERATION_BLOCKSEARCH = True # Begin Phase 2!
+            
+        # If facing down --> back short
+        elif readings[0] > 10 and readings[1] > 20 and readings[2] > 20 and readings[3] > 20:
+            print("Inside zero position!")
+            print("Ending wall-following...")
+            LZ_L = False # End this loop
+            OPERATION_LOCALIZE = False # End Phase 1!
+            OPERATION_BLOCKSEARCH = True # Begin Phase 2!
+        
 
-    
 print("Localization completed.")
     
     
@@ -655,6 +708,50 @@ print("Localization completed.")
 ############################
 
 print("PHASE 2: BLOCK SEARCH")
+
+# First go to loading zone entry from zero position
+# Change orientation to face left-- right side short
+while readings[3] < 10 or readings[3] > 20:
+    Turn_Left_90(intended_g)
+            
+    intended_g += -90 # Update intended orientation
+    if intended_g >= 360: # Place intended_g within 0-360 range
+        intended_g += -360 # If new intended_g is 450, it should actually be 90
+    elif intended_g < 0:
+        intended_g += 360
+    print("New intended orientation: ", intended_g)
+
+print("Now exiting zero position through left side.")
+
+At_Loading_Zone = False
+
+while At_Loading_Zone == False:
+    Move_Fwd_Until()
+    
+    Turn_Right_90(intended_g)
+    intended_g += 90 # Update intended orientation
+    if intended_g >= 360: # Place intended_g within 0-360 range
+        intended_g += -360 # If new intended_g is 450, it should actually be 90
+    elif intended_g < 0:
+        intended_g += 360
+    print("New intended orientation: ", intended_g)
+    
+    Move_Fwd_Until()
+    
+    Turn_Left_90(intended_g)   
+    intended_g += -90 # Update intended orientation
+    if intended_g >= 360: # Place intended_g within 0-360 range
+        intended_g += -360 # If new intended_g is 450, it should actually be 90
+    elif intended_g < 0:
+        intended_g += 360
+    print("New intended orientation: ", intended_g)
+    
+    Move_Fwd_Until(24)
+    
+    At_Loading_Zone = True
+    
+    
+
 
 #Loading Zone + Block Search Code
 #Arrives at loading zone 
@@ -669,8 +766,8 @@ BLOCK_DETECTED = False
 Zone_1 = False 
 
 
-while OPERATION_BLOCKSEARCH == True:
-    time.sleep(SLEEP_TIME) #sleep
+while At_Loading_Zone == True and OPERATION_BLOCKSEARCH == True:
+    #time.sleep(SLEEP_TIME) #sleep
     
     #Check US Sensor Readings 
     readings = read_us() #readings in format [Back, Left, Front, Right, BlockSensor]
@@ -759,7 +856,7 @@ while LOADING_ZONE_EXIT:
         LOADING_ZONE_EXIT = False
         OPERATION_BLOCKSEARCH = False
         OPERATION_DROPOFF = True
-'''      
+     
 
 
 OPERATION_DROPOFF = True
@@ -824,13 +921,14 @@ while OPERATION_DROPOFF == True:
                 if abs(g[0] - intended_g) > 3: # Straighten as needed
                     Straighten(g[0], intended_g)
                             
-                
+     '''   
 
+Goto_Zero = False        
+
+if Goto_Zero = False:
     # ASSUMING WE START FROM MIDDLE OF "ZERO POSITION" FACING RIGHT
     At_Dropoff_Loc = False
-    path = ''
-    while path != ('B1' or 'B2' or 'B3' or 'B4') and Goto_Zero == False:
-        path = input("Enter a valid drop-off zone (B1, B2, B3, or B4): ")
+    path = input("Enter a valid drop-off zone (B1, B2, B3, or B4): ")
 
     if path == 'B1':
         Turn_Left_90(intended_g)
@@ -846,6 +944,7 @@ while OPERATION_DROPOFF == True:
                 
     elif path == 'B2':
         Move_Fwd_Until()
+        
         Turn_Left_90(intended_g)
         intended_g += -90 # Update intended orientation
         if intended_g >= 360: # Place intended_g within 0-360 range
@@ -859,6 +958,7 @@ while OPERATION_DROPOFF == True:
         
     elif path == 'B3':
         Move_Fwd_Until()
+        
         Turn_Right_90(intended_g)
         intended_g += 90 # Update intended orientation
         if intended_g >= 360: # Place intended_g within 0-360 range
@@ -880,6 +980,7 @@ while OPERATION_DROPOFF == True:
         print("New intended orientation: ", intended_g)
         
         Move_Fwd_Until()
+        
         Turn_Right_90(intended_g)
         intended_g += 90 # Update intended orientation
         if intended_g >= 360: # Place intended_g within 0-360 range
@@ -889,6 +990,7 @@ while OPERATION_DROPOFF == True:
         print("New intended orientation: ", intended_g)
         
         Move_Fwd_Until(26) # Until 2 blocks away (~24'') from wall
+        
         Turn_Right_90(intended_g)
         intended_g += 90 # Update intended orientation
         if intended_g >= 360: # Place intended_g within 0-360 range
