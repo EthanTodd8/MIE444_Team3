@@ -380,7 +380,7 @@ def Straighten(g_current, intended_orientation):
 
 
 
-def Move_Fwd_Until(desired_dist_from_wall = 5): 
+def Move_Fwd_Until(desired_dist_from_wall = 4): 
     '''Function to keep moving forward until a desired distance from a wall is met'''
     readings = read_us()
     print(readings)
@@ -760,7 +760,7 @@ while At_Loading_Zone == False:
     print("At loading zone!")
     
     
-'''
+
 
 #Loading Zone + Block Search Code
 #Arrives at loading zone 
@@ -888,6 +888,7 @@ while LOADING_ZONE_EXIT:
         OPERATION_DROPOFF = True
      
 
+'''
 
 OPERATION_DROPOFF = True
 
@@ -899,10 +900,10 @@ while OPERATION_DROPOFF == True:
     print("PHASE 3: BLOCK DROP-OFF")
 
     # ASSUMING WE START AT LOADING ZONE EXIT BLOCK FACING RIGHT
-    Goto_Zero = True # run path to zero position
+    At_Zero = False # run path to zero position
     print("Going to zero position...")
 
-    while Goto_Zero == True:        
+    while At_Zero == False:        
         Move_Fwd_Until()
         
         Turn_Right_90(intended_g)
@@ -923,36 +924,29 @@ while OPERATION_DROPOFF == True:
             intended_g += 360
         print("New intended orientation: ", intended_g)
     
-        Move_Fwd_Until(26) # Until 2 blocks away (~24'') from wall
-        
-        
-        # END ONCE IN ZERO POSITION
+         
+        # END ONCE IN ZERO POSITION (left sensor ~12'')
         # [Back, Left, Front, Right, BlockSensor]
         
-        # If facing right --> left side short
-        if readings[0] > 20 and readings[1] > 7 and readings[2] > 20 and readings[3] > 20:
-            print("Inside zero position!")
-            Goto_Zero = False 
+        move_forward()
+        move_forward()
+        move_forward()
+        move_forward()
+        move_forward()
         
-        # If facing left --> right side short
-        elif readings[0] > 20 and readings[1] > 20 and readings[2] > 20 and readings[3] > 7:
-            print("Inside zero position!")
-            Goto_Zero = False 
+        readings = read_us()
         
-        # If facing up --> front short
-        elif readings[0] > 20 and readings[1] > 20 and readings[2] > 7 and readings[3] > 20:
-            print("Inside zero position!")
-            Goto_Zero = False 
+        while readings[1] < 10:
+            move_forward()
+            readings = read_us()
+            print(readings)
             
-        # If facing down --> back short
-        elif readings[0] > 7 and readings[1] > 20 and readings[2] > 20 and readings[3] > 20:
-            print("Inside zero position!")
-            Goto_Zero = False 
-        
+        print("Inside zero position!")
+        At_Zero = True
                             
    
 
-    if Goto_Zero == False:
+    if At_Zero == True:
         # ASSUMING WE START FROM MIDDLE OF "ZERO POSITION" FACING RIGHT
         At_Dropoff_Loc = False
         path = input("Enter a valid drop-off zone (B1, B2, B3, or B4): ")
